@@ -238,7 +238,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
             this.blurview.setImageResource(R.drawable.icon_album_dark);
             this.civTest.setImageResource(R.drawable.icon_album_default);
         }else {
-            this.blurview.setImageBitmap(bitmap);
+//            this.blurview.setImageBitmap(bitmap);
             this.civTest.setImageBitmap(bitmap);
         }
 

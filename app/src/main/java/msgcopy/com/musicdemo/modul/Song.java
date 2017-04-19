@@ -1,10 +1,12 @@
 package msgcopy.com.musicdemo.modul;
 
+import java.io.Serializable;
+
 /**
  * Created by hefuyi on 2016/11/3.
  */
 
-public class Song {
+public class Song implements Serializable{
 
     public final long albumId;
     public final String albumName;

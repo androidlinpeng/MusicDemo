@@ -114,15 +114,6 @@
         android:layout_marginBottom="20dp"
         android:src="@drawable/icon_album_default" />
 
-    <com.example.administrator.asyc_http.view.LyricView
-        android:id="@+id/mylrc"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="60dp"
-        android:visibility="gone" />
-
     <LinearLayout
         android:id="@+id/bottom_time"
         android:layout_width="match_parent"
