@@ -1,5 +1,7 @@
 package msgcopy.com.musicdemo.adapter;
 
+import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -16,8 +18,11 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
+import msgcopy.com.musicdemo.Constants;
+import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
 
 
@@ -166,7 +171,14 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-
+                    Song song = arraylist.get(getAdapterPosition() - 1);
+                    Intent intentService = new Intent(mContext, MusicService.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("currentMusicPath", song.path);
+                    bundle.putInt("status", 0);
+                    intentService.putExtra("bundle", bundle);
+                    mContext.startService(intentService);
+                    MsgCache.get().put(Constants.MUSIC_INFO, song);
                 }
             }, 100);
 

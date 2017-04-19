@@ -20,6 +20,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import msgcopy.com.musicdemo.Constants;
+import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.RxBus;
 import msgcopy.com.musicdemo.adapter.SongsListAdapter;
@@ -29,6 +30,8 @@ import msgcopy.com.musicdemo.modul.Song;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+
+import static msgcopy.com.musicdemo.Constants.MUSIC_LIST;
 
 /**
  * Created by liang on 2017/4/14.
@@ -97,7 +100,7 @@ public class SongsFragment extends BaseFragment {
                                 Log.i("songList",""+song.path);
                             }
                             mAdapter.setSongList(musicList);
-
+                            MsgCache.get().put(Constants.MUSIC_LIST, musicList);
                             return folderPath.toArray(new String[0]);
                         }
                     })
@@ -146,6 +149,9 @@ public class SongsFragment extends BaseFragment {
                 drawable.draw(c);
             }
         }
+    }
+    public static List<Song> getMusicList() {
+        return (List<Song>) MsgCache.get().getAsObject(MUSIC_LIST);
     }
 }
 

@@ -6,6 +6,9 @@ package msgcopy.com.musicdemo;
 
 public class Constants {
 
+    public static final String MUSIC_LIST = "music_list";
+    public static final String MUSIC_INFO = "current_music_info";
+
     public static final String NAVIGATE_LIBRARY = "navigate_library";
     public static final String NAVIGATE_PLAYLIST = "navigate_playlist";
     public static final String NAVIGATE_QUEUE = "navigate_queue";

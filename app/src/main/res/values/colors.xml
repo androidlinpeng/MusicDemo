@@ -16,4 +16,7 @@
     <color name="bg_divider_base">#c8eaeaea</color>
 
     <color name="album_default_palette_color_light">#ffe8e8e8</color>
+
+    <color name="bg_activity_base">#ffffff</color>
+
 </resources>
