@@ -1,0 +1,30 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">MusicDemo</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+    <string name="str_home">首页</string>
+    <string name="str_theme_skin">主题皮肤</string>
+
+    <string name="songs">歌曲</string>
+    <string name="albums">专辑</string>
+    <string name="artists">歌手</string>
+
+    <string name="play_shuffle">play_shuffle</string>
+    <string name="content_empty_default">空空如也</string>
+
+    <string name="count_song"><xliff:g id="count">%d</xliff:g> 首歌</string>
+    <string name="count_songs"><xliff:g id="count">%d</xliff:g> 首歌</string>
+    <string name="count_album"><xliff:g id="count">%d</xliff:g> 张专辑</string>
+    <string name="count_albums"><xliff:g id="count">%d</xliff:g> 张专辑</string>
+
+    <string name="number_song_add_playlist">已成功添加到歌单</string>
+    <string name="number_songs_add_playlist">添加 <xliff:g example="1" id="number">%d</xliff:g> 首歌曲到歌单</string>
+    <string name="number_song_delete">删除歌曲成功</string>
+    <string name="number_songs_delete">成功删除 <xliff:g example="1" id="number">%d</xliff:g> 首歌曲</string>
+    <string name="number_song_add_queue">已成功添加到播放队列</string>
+    <string name="number_songs_add_queue">添加 <xliff:g example="1" id="number">%d</xliff:g> 首歌到播放队列</string>
+    <string name="create_new_playlist">创建歌单</string>
+
+</resources>
