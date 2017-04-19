@@ -13,10 +13,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import msgcopy.com.musicdemo.fragment.MainFragment;
+import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.utils.ListenerUtil;
 import msgcopy.com.musicdemo.utils.ViewUtils;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -28,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Toolbar mToolbar;
     private NavigationView mNavigationView;//侧边菜单项
     private RelativeLayout playerbottom;
+    private ImageView imgalbumArt;
+    private TextView songtitle;
 
 
     @Override
@@ -58,8 +71,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mNavigationView = (NavigationView) findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
         View headerView = mNavigationView.getHeaderView(0);
-
+        imgalbumArt = (ImageView) headerView.findViewById(R.id.imgalbumArt);
+        songtitle = (TextView) headerView.findViewById(R.id.songtitle);
         initDefaultFragment();
+
+        subscribeChangedSong();
 
     }
 
@@ -135,4 +151,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         mCurrentFragment = fragment;
     }
+
+    private void subscribeChangedSong() {
+        Subscription subscription = RxBus.getInstance()
+                .toObservable(Song.class)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+//                .distinctUntilChanged()
+                .subscribe(new Action1<Song>() {
+                    @Override
+                    public void call(Song song) {
+                        Glide.with(getApplication()).load(ListenerUtil.getAlbumArtUri(song.albumId).toString())
+                                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                                .placeholder(R.drawable.icon_album_default)
+                                .centerCrop()
+                                .into(imgalbumArt);
+                        songtitle.setText(""+song.title);
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                    }
+                });
+        RxBus.getInstance().addSubscription(this, subscription);
+    }
+
 }

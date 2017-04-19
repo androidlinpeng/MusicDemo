@@ -17,8 +17,13 @@ import java.util.List;
 import msgcopy.com.musicdemo.LogUtil;
 import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.MusicPlayerActivity;
+import msgcopy.com.musicdemo.MyApplication;
+import msgcopy.com.musicdemo.RxBus;
+import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.Song;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by liang on 2017/2/13.
@@ -59,6 +64,8 @@ public class MusicService extends Service {
     private int status;
 
     private int pattern;
+
+    private long songID;
 
     private List<Song> mlist = null;
 
@@ -124,6 +131,7 @@ public class MusicService extends Service {
         if (null != bundle) {
             this.currentMusicPath = bundle.getString("currentMusicPath");
             this.status = bundle.getInt("status");
+            this.songID = bundle.getLong("songID");
         }
         pattern = MusicPlayerActivity.getPlayerPattern();
         if (this.status == 0) {
@@ -153,6 +161,14 @@ public class MusicService extends Service {
      */
     private void play(String path) {
         try {
+            SongLoader.getSongForID(MyApplication.getInstance(),songID)
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(new Action1<Song>() {
+                        @Override
+                        public void call(Song song) {
+                            RxBus.getInstance().post(song);
+                        }
+                    });
             mediaPlayer.reset();// 把各项参数恢复到初始状态
             mediaPlayer.setDataSource(path);
             mediaPlayer.prepare(); // 进行缓冲

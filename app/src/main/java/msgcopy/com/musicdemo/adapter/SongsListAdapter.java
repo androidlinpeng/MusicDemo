@@ -175,6 +175,7 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     Intent intentService = new Intent(mContext, MusicService.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("currentMusicPath", song.path);
+                    bundle.putLong("songID", song.id);
                     bundle.putInt("status", 0);
                     intentService.putExtra("bundle", bundle);
                     mContext.startService(intentService);

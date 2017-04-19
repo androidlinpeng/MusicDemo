@@ -87,6 +87,8 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private int pattern ;
 
+    private long songID;
+
     private BroadcastReceiver MReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -139,6 +141,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
             this.musicname = infoEntity.title;
             this.musicArtist = infoEntity.artistName;
             this.musicPath = infoEntity.path;
+            this.songID = infoEntity.id;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -347,6 +350,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
             Bundle bundle = new Bundle();
             bundle.putString("currentMusicPath", musicPath);
             bundle.putInt("status", status);
+            bundle.putLong("songID", songID);
             intentService.putExtra("bundle", bundle);
             startService(intentService);
         } else {
