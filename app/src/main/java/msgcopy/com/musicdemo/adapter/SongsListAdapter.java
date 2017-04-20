@@ -79,6 +79,7 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         int viewType = getItemViewType(position);
         switch (viewType) {
             case Type.TYPE_PLAY_SHUFFLE:
+
                 break;
             case Type.TYPE_SONG:
                 ItemHolder itemHolder = (ItemHolder) holder;

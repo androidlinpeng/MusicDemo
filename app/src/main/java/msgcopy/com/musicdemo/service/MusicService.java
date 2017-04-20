@@ -21,6 +21,7 @@ import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.RxBus;
 import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.fragment.SongsFragment;
+import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -77,16 +78,20 @@ public class MusicService extends Service {
                 case 1:
                     if (mediaPlayer != null) {
                         currentTime = mediaPlayer.getCurrentPosition(); // 获取当前音乐播放的位置
-                        Intent intent = new Intent();
-                        intent.setAction(MUSIC_PLAYER_STATE);
-                        Bundle bundle = new Bundle();
-                        bundle.putString("currentMusicPath", currentMusicPath);
-                        bundle.putInt("currentTime", currentTime);
-                        bundle.putInt("mediaTime", mediaTime);
-                        bundle.putBoolean("isPlaying", isPlaying);
-                        intent.putExtras(bundle);
-                        sendBroadcast(intent);
-                        handler.sendEmptyMessageDelayed(1, 500);
+//                        Intent intent = new Intent();
+//                        intent.setAction(MUSIC_PLAYER_STATE);
+//                        Bundle bundle = new Bundle();
+//                        bundle.putString("currentMusicPath", currentMusicPath);
+//                        bundle.putInt("currentTime", currentTime);
+//                        bundle.putInt("mediaTime", mediaTime);
+//                        bundle.putBoolean("isPlaying", isPlaying);
+//                        intent.putExtras(bundle);
+//                        sendBroadcast(intent);
+                        handler.sendEmptyMessageDelayed(1, 100);
+
+                        PlayState playState = new PlayState(currentMusicPath,currentTime,mediaTime,isPlaying);
+                        RxBus.getInstance().post(playState);
+
                     }
                     break;
             }
@@ -101,6 +106,7 @@ public class MusicService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        LogUtil.i(TAG, "onCreate ");
         pattern = MusicPlayerActivity.getPlayerPattern();
         mediaPlayer = new MediaPlayer();
         myReceiver = new MyReceiver();
@@ -127,6 +133,7 @@ public class MusicService extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
+        LogUtil.i(TAG, "onStart ");
         Bundle bundle = intent.getBundleExtra("bundle");
         if (null != bundle) {
             this.currentMusicPath = bundle.getString("currentMusicPath");
@@ -161,12 +168,13 @@ public class MusicService extends Service {
      */
     private void play(String path) {
         try {
+            LogUtil.i("musicplayID",""+songID+currentMusicPath);
             SongLoader.getSongForID(MyApplication.getInstance(),songID)
                     .subscribeOn(Schedulers.io())
                     .subscribe(new Action1<Song>() {
                         @Override
                         public void call(Song song) {
-                            LogUtil.i("musicplayID",""+song.title);
+                            LogUtil.i("musicplayID","songID:"+song.title+"----------"+currentMusicPath);
                             RxBus.getInstance().post(song);
                         }
                     });

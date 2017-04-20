@@ -22,7 +22,7 @@
         android:layout_alignParentBottom="true">
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/imag_player_next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -30,33 +30,48 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="14dp"
             android:layout_marginRight="14dp"
-            android:tint="?colorAccent"
+            android:tint="?colorPrimary"
+            android:onClick="onClick"
             app:srcCompat="@drawable/ic_skip_next_white_36dp" />
 
         <ImageView
-            android:id="@+id/imageView3"
+            android:id="@+id/imag_player_bottom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/imageView2"
+            android:layout_alignBottom="@+id/imag_player_next"
             android:layout_marginEnd="15dp"
             android:layout_marginRight="15dp"
-            android:layout_toLeftOf="@+id/imageView2"
-            android:layout_toStartOf="@+id/imageView2"
-            android:tint="?colorAccent"
+            android:layout_toLeftOf="@+id/imag_player_next"
+            android:layout_toStartOf="@+id/imag_player_next"
+            android:tint="?colorPrimary"
+            android:onClick="onClick"
             app:srcCompat="@drawable/ic_play_white_36dp" />
 
         <ImageView
             android:id="@+id/imag_albumArt"
             android:layout_width="60dp"
             android:layout_height="60dp"
+            app:srcCompat="@drawable/icon_album_default"
+            android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            app:srcCompat="@drawable/icon_album_default" />
+            android:layout_alignParentStart="true" />
+
+        <SeekBar
+            android:id="@+id/seek_song_touch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:progressDrawable="@drawable/progressbar_color"
+            android:minHeight="3dp"
+            android:thumb="@null"
+            android:progress="0"
+            android:clickable="true"
+            android:visibility="visible"/>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_toLeftOf="@+id/imageView3"
+            android:layout_toLeftOf="@+id/imag_player_bottom"
             android:layout_marginLeft="10dp"
             android:padding="3dp"
             android:layout_toRightOf="@+id/imag_albumArt">

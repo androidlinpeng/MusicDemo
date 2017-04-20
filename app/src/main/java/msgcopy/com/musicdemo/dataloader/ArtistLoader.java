@@ -7,6 +7,7 @@ import android.provider.MediaStore;
 import java.util.ArrayList;
 import java.util.List;
 
+import msgcopy.com.musicdemo.LogUtil;
 import msgcopy.com.musicdemo.modul.Artist;
 import msgcopy.com.musicdemo.utils.PreferencesUtility;
 import rx.Observable;
@@ -46,6 +47,11 @@ public class ArtistLoader {
                 if ((cursor != null) && (cursor.moveToFirst()))
                     do {
                         arrayList.add(new Artist(cursor.getLong(0), cursor.getString(1), cursor.getInt(2), cursor.getInt(3)));
+                        try {
+                            LogUtil.i("getArtistsForCursor",""+cursor.getLong(0)+cursor.getString(1)+cursor.getInt(2)+cursor.getInt(3)+cursor.getInt(4));
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
                     while (cursor.moveToNext());
                 if (cursor != null){

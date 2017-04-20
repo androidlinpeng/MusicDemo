@@ -9,28 +9,29 @@
         <item
             android:id="@+id/nav_theme"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
+            android:title="@string/str_theme" />
         <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/nav_music_hall"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:title="@string/str_music_hall" />
         <item
-            android:id="@+id/nav_manage"
+            android:id="@+id/nav_collect"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
-    </group>
+            android:title="@string/str_collect" />
 
-    <item android:title="Communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
+        <item android:title="其他">
+            <menu>
+                <item
+                    android:id="@+id/nav_settings"
+                    android:icon="@drawable/ic_menu_share"
+                    android:title="@string/songs" />
+                <item
+                    android:id="@+id/nav_drop_out"
+                    android:icon="@drawable/ic_menu_send"
+                    android:title="@string/str_drop_out" />
+            </menu>
+        </item>
+
+    </group>
 
 </menu>

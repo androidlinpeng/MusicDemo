@@ -5,7 +5,11 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
     <string name="str_home">首页</string>
-    <string name="str_theme_skin">主题皮肤</string>
+    <string name="str_theme">主题</string>
+    <string name="str_music_hall">音乐馆</string>
+    <string name="str_collect">我的收藏</string>
+    <string name="str_settings">设置</string>
+    <string name="str_drop_out">退出</string>
 
     <string name="songs">歌曲</string>
     <string name="albums">专辑</string>

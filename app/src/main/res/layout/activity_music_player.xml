@@ -42,9 +42,9 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
-            android:contentDescription="@null"
             android:padding="6dp"
-            android:src="@drawable/ic_menu_share" />
+            android:background="@android:color/transparent"
+            android:src="@drawable/abc_ic_menu_moreoverflow_mtrl_alpha"/>
 
         <TextView
             android:id="@+id/music_name"
@@ -232,6 +232,7 @@
             android:id="@+id/random"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:padding="1dp"
             android:background="@drawable/ic_shuffle_white_36dp"
             android:gravity="center"
             android:visibility="gone"/>

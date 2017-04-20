@@ -1,10 +1,7 @@
 package msgcopy.com.musicdemo;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -24,11 +21,16 @@ import java.util.Formatter;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.ToastUtils;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 public class MusicPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -90,49 +92,49 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private long songID;
 
-    private BroadcastReceiver MReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            LogUtil.i("onReceive", "onReceive");
-            if (intent != null) {
-                String action = intent.getAction();
-                if (action.equals(MusicService.MUSIC_PLAYER_STATE)) {
-                    Bundle bundle = intent.getExtras();
-                    String path = bundle.getString("currentMusicPath");
-                    position = bundle.getInt("currentTime");
-                    duration = bundle.getInt("mediaTime");
-                    isPlaying = bundle.getBoolean("isPlaying");
-                    play.setImageResource(R.drawable.ic_pause_white_36dp);
-
-                    if (mediaProgress != null) {
-                        if (duration > 0) {
-                            long pos = 1000L * position / duration;
-                            //显示播放进度
-                            mediaProgress.setProgress((int) pos);
-                        }
-                    }
-
-                    if (curMediaTime != null) {
-                        curMediaTime.setText(stringForTime(position));
-                    }
-                    if (mediaTime != null) {
-                        mediaTime.setText(stringForTime(duration));
-                    }
-                    updatePausePlay(isPlaying);
-                    if (!path.equals(musicPath)) {
-                        Song infoEntity = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
-                        musicname = infoEntity.title;
-                        musicArtist = infoEntity.artistName;
-                        musicPath = infoEntity.path;
-                        songID = infoEntity.id;
-                        music_name.setText(musicname);
-                        artist.setText(musicArtist);
-                        initView();
-                    }
-                }
-            }
-        }
-    };
+//    private BroadcastReceiver MReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            LogUtil.i("onReceive", "onReceive");
+//            if (intent != null) {
+//                String action = intent.getAction();
+//                if (action.equals(MusicService.MUSIC_PLAYER_STATE)) {
+//                    Bundle bundle = intent.getExtras();
+//                    String path = bundle.getString("currentMusicPath");
+//                    position = bundle.getInt("currentTime");
+//                    duration = bundle.getInt("mediaTime");
+//                    isPlaying = bundle.getBoolean("isPlaying");
+//                    play.setImageResource(R.drawable.ic_pause_white_36dp);
+//
+//                    if (mediaProgress != null) {
+//                        if (duration > 0) {
+//                            long pos = 1000L * position / duration;
+//                            //显示播放进度
+//                            mediaProgress.setProgress((int) pos);
+//                        }
+//                    }
+//
+//                    if (curMediaTime != null) {
+//                        curMediaTime.setText(stringForTime(position));
+//                    }
+//                    if (mediaTime != null) {
+//                        mediaTime.setText(stringForTime(duration));
+//                    }
+//                    updatePausePlay(isPlaying);
+//                    if (!path.equals(musicPath)) {
+//                        Song infoEntity = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
+//                        musicname = infoEntity.title;
+//                        musicArtist = infoEntity.artistName;
+//                        musicPath = infoEntity.path;
+//                        songID = infoEntity.id;
+//                        music_name.setText(musicname);
+//                        artist.setText(musicArtist);
+//                        initView();
+//                    }
+//                }
+//            }
+//        }
+//    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,17 +153,69 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
         setContentView(R.layout.activity_music_player);
 
-        initMediaController();
-        initView();
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(MusicService.MUSIC_PLAYER_STATE);
-        this.registerReceiver(this.MReceiver, intentFilter);
-
         this.mFormatBuilder = new StringBuilder();
         this.mFormatter = new Formatter(mFormatBuilder, Locale.getDefault());
 
+        initMediaController();
+        initView();
 
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(MusicService.MUSIC_PLAYER_STATE);
+//        this.registerReceiver(this.MReceiver, intentFilter);
+
+        subscribePlayState();
+
+    }
+
+    private void subscribePlayState() {
+        Subscription subscription = RxBus.getInstance()
+                .toObservable(PlayState.class)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+//                .distinctUntilChanged()
+                .subscribe(new Action1<PlayState>() {
+                    @Override
+                    public void call(PlayState playState) {
+                        if (mediaProgress != null) {
+                            String path = playState.getCurrentPath();
+                            position = playState.getCurrentTime();
+                            duration = playState.getMediaTime();
+                            isPlaying = playState.isPlaying();
+                            play.setImageResource(R.drawable.ic_pause_white_36dp);
+
+                            if (mediaProgress != null) {
+                                if (duration > 0) {
+                                    long pos = 1000L * position / duration;
+                                    //显示播放进度
+                                    mediaProgress.setProgress((int) pos);
+                                }
+                            }
+
+                            if (curMediaTime != null) {
+                                curMediaTime.setText(stringForTime(position));
+                            }
+                            if (mediaTime != null) {
+                                mediaTime.setText(stringForTime(duration));
+                            }
+                            updatePausePlay(isPlaying);
+                            if (!path.equals(musicPath)) {
+                                Song infoEntity = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
+                                musicname = infoEntity.title;
+                                musicArtist = infoEntity.artistName;
+                                musicPath = infoEntity.path;
+                                songID = infoEntity.id;
+                                music_name.setText(musicname);
+                                artist.setText(musicArtist);
+                                initView();
+                            }
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                    }
+                });
+        RxBus.getInstance().addSubscription(this, subscription);
     }
 
     private void initMediaController() {
@@ -188,6 +242,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
                     if (fromUser) {
                         long newposition = (duration * progress) / 1000L;
 //                        long newposition = 1000L * progress / duration;
+                        LogUtil.i(TAG, "seekBar "+duration+"------"+newposition);
                         sendBroadcast(newposition);
                     }
 
@@ -229,6 +284,8 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
         music_name.setText(musicname);
         artist.setText(musicArtist);
+        this.curMediaTime.setText(stringForTime(0));
+        this.mediaTime.setText(stringForTime(0));
 
     }
 
@@ -260,9 +317,9 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (null != this.MReceiver) {
-            unregisterReceiver(this.MReceiver);
-        }
+//        if (null != this.MReceiver) {
+//            unregisterReceiver(this.MReceiver);
+//        }
     }
 
     private String stringForTime(int timeMs) {

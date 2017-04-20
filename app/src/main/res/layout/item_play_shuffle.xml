@@ -15,7 +15,7 @@
         android:layout_marginTop="16dp"
         android:src="@drawable/ic_shuffle_white_36dp"
         android:tag="tint_accent_color"
-        android:tint="?colorAccent" />
+        android:tint="?colorPrimary" />
 
     <TextView
         android:id="@+id/textView"

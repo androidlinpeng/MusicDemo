@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 
 import java.util.List;
 
+import msgcopy.com.musicdemo.LogUtil;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Artist;
 import msgcopy.com.musicdemo.modul.ArtistArt;
@@ -70,12 +71,15 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ItemHolder
         itemHolder.songCount.setText(ListenerUtil.makeLabel(mContext, R.plurals.Nsongs, localItem.songCount));
 
         String artistArtJson = PreferencesUtility.getInstance(mContext).getArtistArt(localItem.id);
+        LogUtil.i("artistArtJson",""+localItem.name);
         if (TextUtils.isEmpty(artistArtJson)) {
 //            ArtistArt artistArt = new Gson().fromJson(artistArtJson, ArtistArt.class);
 //            loadArtistArt(artistArt, itemHolder);
+            LogUtil.i("artistArtJson","1"+artistArtJson);
         }else {
             ArtistArt artistArt = new Gson().fromJson(artistArtJson, ArtistArt.class);
             loadArtistArt(artistArt, itemHolder);
+            LogUtil.i("artistArtJson","2"+artistArtJson);
         }
 
         if (ListenerUtil.isLollipop())
