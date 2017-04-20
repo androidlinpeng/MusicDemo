@@ -22,6 +22,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import msgcopy.com.musicdemo.fragment.MainFragment;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 import rx.Subscription;
@@ -40,7 +41,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView mNavigationView;//侧边菜单项
     private RelativeLayout playerbottom;
     private ImageView imgalbumArt;
+    private ImageView imag_albumArt;
     private TextView songtitle;
+    private TextView text_song_title;
+    private TextView text_song_artist;
 
 
     @Override
@@ -51,16 +55,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(mToolbar);
 
         mToolbar.setTitle(R.string.str_home);
-        playerbottom = (RelativeLayout)findViewById(R.id.player_bottom);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+        playerbottom = (RelativeLayout)findViewById(R.id.player_bottom);
+        imag_albumArt = (ImageView) findViewById(R.id.imag_albumArt);
+        text_song_title = (TextView) findViewById(R.id.text_song_title);
+        text_song_artist = (TextView)findViewById(R.id.text_song_artist);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(
@@ -165,8 +164,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                                 .placeholder(R.drawable.icon_album_default)
                                 .centerCrop()
-                                .into(imgalbumArt);
-                        songtitle.setText(""+song.title);
+                                .into(imag_albumArt);
+                        text_song_title.setText(""+song.title);
+                        text_song_artist.setText(""+song.artistName);
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -176,4 +176,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         RxBus.getInstance().addSubscription(this, subscription);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        RxBus.getInstance().unSubscribe(this);
+        stopService(new Intent(this,MusicService.class));
+    }
 }

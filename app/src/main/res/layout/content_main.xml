@@ -46,7 +46,7 @@
             app:srcCompat="@drawable/ic_play_white_36dp" />
 
         <ImageView
-            android:id="@+id/imageView4"
+            android:id="@+id/imag_albumArt"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_alignParentLeft="true"
@@ -57,8 +57,27 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_toLeftOf="@+id/imageView3"
+            android:layout_marginLeft="10dp"
             android:padding="3dp"
-            android:layout_toRightOf="@+id/imageView4">
+            android:layout_toRightOf="@+id/imag_albumArt">
+
+            <TextView
+                android:id="@+id/text_song_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:padding="5dp"
+                android:textSize="16sp"
+                style="@style/ListItemTitleStyle"/>
+
+            <TextView
+                android:id="@+id/text_song_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="14sp"
+                android:layout_alignParentBottom="true"
+                style="@style/ListItemSubTitleStyle"/>
 
         </RelativeLayout>
 

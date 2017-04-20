@@ -166,6 +166,7 @@ public class MusicService extends Service {
                     .subscribe(new Action1<Song>() {
                         @Override
                         public void call(Song song) {
+                            LogUtil.i("musicplayID",""+song.title);
                             RxBus.getInstance().post(song);
                         }
                     });

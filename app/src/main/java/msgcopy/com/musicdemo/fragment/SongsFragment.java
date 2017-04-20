@@ -1,12 +1,16 @@
 package msgcopy.com.musicdemo.fragment;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
@@ -21,12 +25,16 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import msgcopy.com.musicdemo.Constants;
 import msgcopy.com.musicdemo.MsgCache;
+import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.RxBus;
 import msgcopy.com.musicdemo.adapter.SongsListAdapter;
 import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.event.MediaUpdateEvent;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.permission.PermissionManager;
+import msgcopy.com.musicdemo.permission.PermissionUtils;
+import msgcopy.com.musicdemo.utils.ListenerUtil;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -37,11 +45,11 @@ import static msgcopy.com.musicdemo.Constants.MUSIC_LIST;
  * Created by liang on 2017/4/14.
  */
 
-public class SongsFragment extends BaseFragment {
+public class SongsFragment extends BaseFragment implements ActivityCompat.OnRequestPermissionsResultCallback{
 
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
-    private String action ;
+    private String action;
     private SongsListAdapter mAdapter;
     private LinearLayoutManager linearLayoutManager;
 
@@ -58,6 +66,7 @@ public class SongsFragment extends BaseFragment {
         fragment.setArguments(args);
         return fragment;
     }
+
     @Override
     protected int setLayoutResourceID() {
         return R.layout.fragment_recyclerview;
@@ -84,8 +93,12 @@ public class SongsFragment extends BaseFragment {
 
     //应用启动时通知系统刷新媒体库,
     private void updataMedia() {
+        PermissionManager.init(MyApplication.getInstance());
         //版本号的判断  4.4为分水岭，发送广播更新媒体库
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (ListenerUtil.isMarshmallow() && !PermissionManager.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                PermissionUtils.requestPermission(getActivity(), PermissionUtils.CODE_READ_EXTERNAL_STORAGE);
+            }
             SongLoader.getAllSongs(getActivity())
                     .map(new Func1<List<Song>, String[]>() {
                         @Override
@@ -97,7 +110,7 @@ public class SongsFragment extends BaseFragment {
                                 folderPath.add(i, song.path);
                                 i++;
                                 musicList.add(song);
-                                Log.i("songList",""+song.path);
+                                Log.i("songList", "" + song.path);
                             }
                             mAdapter.setSongList(musicList);
                             MsgCache.get().put(Constants.MUSIC_LIST, musicList);
@@ -120,15 +133,19 @@ public class SongsFragment extends BaseFragment {
                         }
                     });
         } else {
+            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://"
+                    + Environment.getExternalStorageDirectory())));
         }
 
+
     }
-    private static class ItemListDivider extends RecyclerView.ItemDecoration{
 
-        private Drawable drawable=null;
+    private static class ItemListDivider extends RecyclerView.ItemDecoration {
 
-        public ItemListDivider(Context cxt){
-            this.drawable=cxt.getResources().getDrawable(R.drawable.divider_article_list);
+        private Drawable drawable = null;
+
+        public ItemListDivider(Context cxt) {
+            this.drawable = cxt.getResources().getDrawable(R.drawable.divider_article_list);
         }
 
         @Override
@@ -150,18 +167,8 @@ public class SongsFragment extends BaseFragment {
             }
         }
     }
+
     public static List<Song> getMusicList() {
         return (List<Song>) MsgCache.get().getAsObject(MUSIC_LIST);
     }
 }
-
-
-
-
-
-
-
-
-
-
-

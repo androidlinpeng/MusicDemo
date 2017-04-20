@@ -123,6 +123,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
                         musicname = infoEntity.title;
                         musicArtist = infoEntity.artistName;
                         musicPath = infoEntity.path;
+                        songID = infoEntity.id;
                         music_name.setText(musicname);
                         artist.setText(musicArtist);
                         initView();
