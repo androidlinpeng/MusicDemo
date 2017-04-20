@@ -1,4 +1,4 @@
-package msgcopy.com.musicdemo;
+package msgcopy.com.musicdemo.utils;
 
 import android.content.Context;
 import android.widget.Toast;
