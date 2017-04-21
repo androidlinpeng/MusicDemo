@@ -19,10 +19,12 @@ import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.MusicPlayerActivity;
 import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.RxBus;
+import msgcopy.com.musicdemo.activity.LockScreenActivity;
 import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.utils.ToastUtils;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
@@ -42,6 +44,8 @@ public class MusicService extends Service {
     public static final String UPDATE_MUSIC_PLAYER_PATTERN = "update_music_player_pattern";
 
     public static final String MUSIC_CURRENT_POSITION = "music_current_position";  //当前音乐播放时间更新动作
+
+    public static final String MUSIC_SCREEN_OFF= "music_screen_off";
 
     public static final String MUSIC_PLAYER_STATE = "music_player_state";
 
@@ -112,6 +116,7 @@ public class MusicService extends Service {
         myReceiver = new MyReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(MUSIC_CURRENT_POSITION);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(this.myReceiver, filter);
 
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -289,6 +294,11 @@ public class MusicService extends Service {
                     long position = bundle.getLong("newposition");
                     mediaPlayer.seekTo((int) position);
                     LogUtil.i(TAG, "currentposition" + position);
+                }else if (action.equals(Intent.ACTION_SCREEN_OFF)){
+                    ToastUtils.showLong(MyApplication.getInstance(),"收到锁屏广播");
+                    Intent lockscreen = new Intent(MusicService.this, LockScreenActivity.class);
+                    lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(lockscreen);
                 }
             }
         }

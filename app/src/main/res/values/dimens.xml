@@ -20,6 +20,8 @@
     <dimen name="linear_layout_list_item_image_size">40.0dip</dimen>
     <dimen name="linear_layout_list_subtitle_max_width">140.0dip</dimen>
     <dimen name="linear_layout_list_subtitle_2_max_width">140.0dip</dimen>
+    <dimen name="lock_screen_backdround_left">30.0dip</dimen>
+    <dimen name="lock_screen_view_height">12.0dip</dimen>
 
     <dimen name="base_horizontal_divider_height">1px</dimen>
     <dimen name="spacing_card_album_grid">4dp</dimen>

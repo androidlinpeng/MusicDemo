@@ -64,6 +64,7 @@
             android:progressDrawable="@drawable/progressbar_color"
             android:minHeight="3dp"
             android:thumb="@null"
+            android:layout_toRightOf="@+id/imag_albumArt"
             android:progress="0"
             android:clickable="true"
             android:visibility="visible"/>

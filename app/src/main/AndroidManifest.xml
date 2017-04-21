@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
 
-
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -63,12 +62,16 @@
                 <data android:mimeType="application/x-ogg" />
                 <data android:mimeType="application/itunes" />
             </intent-filter>
-
         </activity>
-
-        <activity android:name=".MusicPlayerActivity"></activity>
+        <activity android:name=".MusicPlayerActivity" />
 
         <service android:name=".service.MusicService" />
+
+        <activity
+            android:name=".activity.LockScreenActivity"
+            android:launchMode="singleInstance"
+            android:taskAffinity="com.example.suoping.lockscreen"
+            android:excludeFromRecents="true"/>
     </application>
 
 </manifest>

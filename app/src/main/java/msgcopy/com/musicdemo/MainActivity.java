@@ -139,8 +139,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 break;
             case R.id.imag_player_next:
-                this.imag_player_bottom.setImageResource(R.drawable.ic_play_white_36dp);
-                sendService(3);
+                if (!CommonUtil.isBlank(currentsong)) {
+                    this.imag_player_bottom.setImageResource(R.drawable.ic_play_white_36dp);
+                    sendService(3);
+                }
                 break;
         }
 
