@@ -233,7 +233,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:padding="1dp"
-            android:background="@drawable/ic_shuffle_white_36dp"
+            android:background="@drawable/ic_list_shuffle"
             android:gravity="center"
             android:visibility="gone"/>
 

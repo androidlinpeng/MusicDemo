@@ -3,6 +3,9 @@ package msgcopy.com.musicdemo.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -10,7 +13,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import msgcopy.com.musicdemo.Constants;
-import msgcopy.com.musicdemo.LogUtil;
 import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.RxBus;
@@ -43,9 +45,13 @@ public class LockScreenActivity extends AppCompatActivity {
     private Song currentsong;
     private boolean isPlaying = false;
 
+    private GestureDetector gestureDetector;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        //越过手机锁屏界面
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         try {
             currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
         } catch (Exception e) {
@@ -64,7 +70,35 @@ public class LockScreenActivity extends AppCompatActivity {
         subscribeChangedSong();
         subscribePlayState();
 
+        swipeGestures();
     }
+
+    private void swipeGestures() {
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                // e1: 第一次按下的位置   e2:  当手离开屏幕 时的位置  velocityX:  沿x 轴的速度  velocityY： 沿Y轴方向的速度
+
+                //向上滑动关闭
+                if ((e1.getRawY() - e2.getRawY() ) > 100){
+                    finish();
+                    return true;//消费掉当前事件
+                }
+
+                return super.onFling(e1, e2, velocityX, velocityY);
+            }
+        });
+
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        gestureDetector.onTouchEvent(event);
+
+        return super.onTouchEvent(event);
+    }
+
 
     @OnClick({R.id.lock_screen_play,R.id.lock_screen_last,R.id.lock_screen_next})
     public void LockScreen(ImageView imag){
@@ -158,6 +192,6 @@ public class LockScreenActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+
     }
 }

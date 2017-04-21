@@ -7,6 +7,10 @@
             android:icon="@drawable/ic_menu_camera"
             android:title="@string/str_home" />
         <item
+            android:id="@+id/nav_search"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="@string/str_search" />
+        <item
             android:id="@+id/nav_theme"
             android:icon="@drawable/ic_menu_gallery"
             android:title="@string/str_theme" />

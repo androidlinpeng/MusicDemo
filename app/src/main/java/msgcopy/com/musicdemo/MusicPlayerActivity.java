@@ -403,7 +403,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
         sendBroadcast(intent);
     }
 
-    private void sendService(int status) {
+    public void sendService(int status) {
         if (!CommonUtil.isBlank(musicPath)) {
             Intent intentService = new Intent(MusicPlayerActivity.this, MusicService.class);
             Bundle bundle = new Bundle();

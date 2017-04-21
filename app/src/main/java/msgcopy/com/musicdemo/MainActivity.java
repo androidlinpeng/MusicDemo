@@ -3,6 +3,7 @@ package msgcopy.com.musicdemo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -11,9 +12,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -22,12 +25,17 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import msgcopy.com.musicdemo.fragment.MainFragment;
+import msgcopy.com.musicdemo.fragment.SearchFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
+import msgcopy.com.musicdemo.utils.ToastUtils;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -42,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout mDrawerLayout;//侧边菜单视图
     private ActionBarDrawerToggle mDrawerToggle;  //菜单开关
     private Toolbar mToolbar;
+    private AppBarLayout appBar;
     private NavigationView mNavigationView;//侧边菜单项
     private RelativeLayout playerbottom;
     private ImageView imgalbumArt;
@@ -51,15 +60,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView songtitle;
     private TextView text_song_title;
     private TextView text_song_artist;
+
     private SeekBar mediaProgress = null;
 
     private Song currentsong;
     private boolean isPlaying = false;
 
+    private int currentTime;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //软键盘弹出时底部布局上移问题
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
         try {
             currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
@@ -95,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initView() {
+        appBar = (AppBarLayout) findViewById(R.id.appBar);
         playerbottom = (RelativeLayout) findViewById(R.id.player_bottom);
         imag_albumArt = (ImageView) findViewById(R.id.imag_albumArt);
         imag_player_bottom = (ImageView) findViewById(R.id.imag_player_bottom);
@@ -191,23 +207,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.nav_home) {
             mToolbar.setTitle(R.string.str_home);
             switchFragment(MainFragment.class);
+        } else if (id == R.id.nav_search) {
+            mToolbar.setTitle(R.string.str_search);
+            switchFragment(SearchFragment.class);
         } else if (id == R.id.nav_theme) {
             mToolbar.setTitle(R.string.str_theme);
-//            startActivity(new Intent(this, ChangeThemeSkinActivity.class));
+
         } else if (id == R.id.nav_music_hall) {
-
+            mToolbar.setTitle(R.string.str_music_hall);
         } else if (id == R.id.nav_collect) {
-
+            mToolbar.setTitle(R.string.str_collect);
         } else if (id == R.id.nav_settings) {
-
+            mToolbar.setTitle(R.string.str_settings);
         } else if (id == R.id.nav_drop_out) {
-
+            mToolbar.setTitle(R.string.str_drop_out);
+            stopService(new Intent(MainActivity.this, MusicService.class));
+            finish();
         }
         item.setChecked(true);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
+
 
     public void switchFragment(Class<?> mclass) {
         Fragment fragment = ViewUtils.createFragment(mclass);
@@ -278,7 +300,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onDestroy() {
         super.onDestroy();
         RxBus.getInstance().unSubscribe(this);
-        stopService(new Intent(this, MusicService.class));
     }
 
     private void sendService(int status) {
@@ -298,4 +319,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             this.imag_player_bottom.setImageResource(R.drawable.ic_play_white_36dp);
         }
     }
+
+    private int keyBackClickCount;
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            switch (keyBackClickCount++) {
+                case 0:
+                    ToastUtils.showShort(this, R.string.str_press_again_to_exit);
+                    Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            keyBackClickCount = 0;
+                        }
+                    }, 3000);
+                    break;
+                case 1:
+                    finish();
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 }

@@ -24,6 +24,7 @@ import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.ToastUtils;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -117,6 +118,7 @@ public class MusicService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(MUSIC_CURRENT_POSITION);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(this.myReceiver, filter);
 
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -173,13 +175,11 @@ public class MusicService extends Service {
      */
     private void play(String path) {
         try {
-            LogUtil.i("musicplayID",""+songID+currentMusicPath);
             SongLoader.getSongForID(MyApplication.getInstance(),songID)
                     .subscribeOn(Schedulers.io())
                     .subscribe(new Action1<Song>() {
                         @Override
                         public void call(Song song) {
-                            LogUtil.i("musicplayID","songID:"+song.title+"----------"+currentMusicPath);
                             RxBus.getInstance().post(song);
                         }
                     });
@@ -214,10 +214,12 @@ public class MusicService extends Service {
                             if (i - 1 >= 0) {
                                 currentMusicPath = mlist.get(i - 1).path;
                                 infoEntity = mlist.get(i - 1);
+                                songID = mlist.get(i - 1).id;
                                 break;
                             } else {
                                 currentMusicPath = mlist.get(size - 1).path;
                                 infoEntity = mlist.get(size - 1);
+                                songID = mlist.get(size - 1).id;
                                 break;
                             }
                         }
@@ -228,10 +230,12 @@ public class MusicService extends Service {
                             if (i + 1 < size) {
                                 currentMusicPath = mlist.get(i + 1).path;
                                 infoEntity = mlist.get(i + 1);
+                                songID = mlist.get(i + 1).id;
                                 break;
                             } else {
                                 currentMusicPath = mlist.get(0).path;
                                 infoEntity = mlist.get(0);
+                                songID = mlist.get(0).id;
                                 break;
                             }
                         }
@@ -295,12 +299,37 @@ public class MusicService extends Service {
                     mediaPlayer.seekTo((int) position);
                     LogUtil.i(TAG, "currentposition" + position);
                 }else if (action.equals(Intent.ACTION_SCREEN_OFF)){
-                    ToastUtils.showLong(MyApplication.getInstance(),"收到锁屏广播");
                     Intent lockscreen = new Intent(MusicService.this, LockScreenActivity.class);
                     lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(lockscreen);
+                }else if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
+                    if (intent.hasExtra("state")) {
+                        int state = intent.getIntExtra("state", 0);
+                        if (state == 1) {//插入耳机
+
+                        } else if (state == 0) {//拔出耳机
+                            sendService(2);
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private void sendService(int status) {
+        if (!CommonUtil.isBlank(currentMusicPath)) {
+            Intent intentService = new Intent(MusicService.this, MusicService.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("currentMusicPath", currentMusicPath);
+            bundle.putInt("status", status);
+            bundle.putLong("songID", songID);
+            intentService.putExtra("bundle", bundle);
+            startService(intentService);
+        } else {
+            ToastUtils.showShort(getApplicationContext(), "请选你喜欢的歌曲播放");
         }
     }
 }

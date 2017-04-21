@@ -1,11 +1,14 @@
 package msgcopy.com.musicdemo.utils;
 
 
+import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
+import android.view.View;
 
 /**
  * Created by hefuyi on 2016/11/4.
@@ -39,6 +42,11 @@ public class ListenerUtil {
     public static final String makeLabel(final Context context, final int pluralInt,
                                          final int number) {
         return context.getResources().getQuantityString(pluralInt, number, number);
+    }
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static boolean isRtl(Resources res) {
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) &&
+                (res.getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL);
     }
 
 }
