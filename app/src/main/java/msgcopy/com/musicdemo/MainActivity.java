@@ -140,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (view.getId()) {
             case R.id.player_bottom:
                 startActivity(new Intent(this, MusicPlayerActivity.class));
+                overridePendingTransition(R.anim.leftin,R.anim.leftout);
                 break;
             case R.id.imag_player_bottom:
                 if (!CommonUtil.isBlank(currentsong)) {
