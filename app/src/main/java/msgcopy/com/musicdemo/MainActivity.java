@@ -29,6 +29,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import msgcopy.com.musicdemo.fragment.MainFragment;
+import msgcopy.com.musicdemo.fragment.MusicHallFragment;
 import msgcopy.com.musicdemo.fragment.SearchFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
@@ -213,9 +214,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             switchFragment(SearchFragment.class);
         } else if (id == R.id.nav_theme) {
             mToolbar.setTitle(R.string.str_theme);
-
         } else if (id == R.id.nav_music_hall) {
             mToolbar.setTitle(R.string.str_music_hall);
+            switchFragment(MusicHallFragment.class);
         } else if (id == R.id.nav_collect) {
             mToolbar.setTitle(R.string.str_collect);
         } else if (id == R.id.nav_settings) {

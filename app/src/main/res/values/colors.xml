@@ -28,4 +28,7 @@
     <color name="sub_title_color">#f7f6f6</color>
     <color name="sub_content_color">#e9e7e7</color>
 
+    <color name="sub_title_colorDark">#202020</color>
+    <color name="sub_content_colorDark">#878686</color>
+
 </resources>
