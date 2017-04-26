@@ -203,7 +203,7 @@
     <RelativeLayout
         android:id="@+id/player_pattern"
         android:layout_width="80dp"
-        android:layout_height="30dp"
+        android:layout_height="35dp"
         android:layout_marginLeft="20dp"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="10dp"
@@ -238,5 +238,29 @@
             android:visibility="gone"/>
 
     </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/player_list"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:padding="5dp"
+        android:gravity="center"
+        android:onClick="onClick"
+        android:focusable="true"
+        android:clickable="true">
+
+        <ImageView
+            android:id="@+id/imag_player_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_queue_music_white_48dp"
+            android:gravity="center" />
+
+    </RelativeLayout>
+
 
 </RelativeLayout>

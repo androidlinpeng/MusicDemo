@@ -15,7 +15,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
-import msgcopy.com.musicdemo.NavigationUtil;
+import msgcopy.com.musicdemo.utils.NavigationUtil;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Album;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
@@ -50,6 +50,7 @@ public class ArtistAlbumAdapter extends RecyclerView.Adapter<ArtistAlbumAdapter.
 
         Glide.with(mContext).load(ListenerUtil.getAlbumArtUri(localItem.id).toString())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .placeholder(R.drawable.icon_album_default)
                 .centerCrop()
                 .into(itemHolder.albumArt);
 

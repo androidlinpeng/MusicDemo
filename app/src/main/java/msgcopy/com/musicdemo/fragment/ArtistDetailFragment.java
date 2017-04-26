@@ -22,11 +22,12 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import msgcopy.com.musicdemo.Constants;
-import msgcopy.com.musicdemo.LogUtil;
+import msgcopy.com.musicdemo.MainActivity;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.adapter.ArtistSongAdapter;
 import msgcopy.com.musicdemo.dataloader.ArtistSongLoader;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.view.DividerItemDecoration;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -118,6 +119,14 @@ public class ArtistDetailFragment extends BaseFragment {
         final ActionBar ab = ((AppCompatActivity) getActivity()).getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
         collapsingToolbarLayout.setTitle(artistName);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((AppCompatActivity) getActivity()).getSupportFragmentManager().popBackStack();
+                MainActivity.mToolbar.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
 }

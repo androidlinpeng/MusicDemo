@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import msgcopy.com.musicdemo.HttpUser;
-import msgcopy.com.musicdemo.LogUtil;
+import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.NewSong;
 import msgcopy.com.musicdemo.modul.Songurl;

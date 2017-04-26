@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,22 +14,110 @@
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" >
+            style="@style/BaseActionBarStyle">
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <!--<include layout="@layout/content_main" />-->
 
-    <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/fab"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_gravity="bottom|end"-->
-        <!--android:layout_margin="@dimen/fab_margin"-->
-        <!--app:srcCompat="@android:drawable/ic_dialog_email" />-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/appBar"
+        tools:showIn="@layout/app_bar_main">
 
-</android.support.design.widget.CoordinatorLayout>
+        <FrameLayout
+            android:id="@+id/frame_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/player_bottom"/>
+
+        <RelativeLayout
+            android:id="@+id/player_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:onClick="onClick"
+            android:layout_alignParentBottom="true">
+
+            <ImageView
+                android:id="@+id/imag_player_next"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="14dp"
+                android:layout_marginRight="14dp"
+                android:tint="?colorPrimary"
+                android:onClick="onClick"
+                app:srcCompat="@drawable/ic_skip_next_white_36dp" />
+
+            <ImageView
+                android:id="@+id/imag_player_bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/imag_player_next"
+                android:layout_marginEnd="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_toLeftOf="@+id/imag_player_next"
+                android:layout_toStartOf="@+id/imag_player_next"
+                android:tint="?colorPrimary"
+                android:onClick="onClick"
+                app:srcCompat="@drawable/ic_play_white_36dp" />
+
+            <ImageView
+                android:id="@+id/imag_albumArt"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                app:srcCompat="@drawable/icon_album_default"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+            <SeekBar
+                android:id="@+id/seek_song_touch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:progressDrawable="@drawable/progressbar_color"
+                android:minHeight="3dp"
+                android:thumb="@null"
+                android:layout_toRightOf="@+id/imag_albumArt"
+                android:progress="0"
+                android:clickable="true"
+                android:visibility="visible"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@+id/imag_player_bottom"
+                android:layout_marginLeft="10dp"
+                android:padding="3dp"
+                android:layout_toRightOf="@+id/imag_albumArt">
+
+                <TextView
+                    android:id="@+id/text_song_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:padding="5dp"
+                    android:textSize="16sp"
+                    style="@style/ListItemTitleStyle"/>
+
+                <TextView
+                    android:id="@+id/text_song_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:textSize="14sp"
+                    android:layout_alignParentBottom="true"
+                    style="@style/ListItemSubTitleStyle"/>
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -22,6 +22,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import msgcopy.com.musicdemo.Constants;
+import msgcopy.com.musicdemo.MainActivity;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.dataloader.AlbumSongLoader;
 import msgcopy.com.musicdemo.fragment.BaseFragment;
@@ -84,6 +85,7 @@ public class AlbumDetailFragment extends BaseFragment {
 
         if (getArguments().getBoolean("transition")) {
             albumArt.setTransitionName(getArguments().getString("transition_name"));
+            albumArt.setBackgroundResource(R.drawable.icon_album_default);
         }
 
         recyclerView.setAdapter(mAdapter);
@@ -91,8 +93,8 @@ public class AlbumDetailFragment extends BaseFragment {
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST, false));
 
         setupToolbar();
-
         subscribeMetaChangedEvent();
+
 
     }
 
@@ -120,10 +122,14 @@ public class AlbumDetailFragment extends BaseFragment {
         final ActionBar ab = ((AppCompatActivity) getActivity()).getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
         collapsingToolbarLayout.setTitle(albumName);
-    }
 
-    public void onBackPressed() {
-        ((AppCompatActivity) getActivity()).getSupportFragmentManager().popBackStack();
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((AppCompatActivity) getActivity()).getSupportFragmentManager().popBackStack();
+                MainActivity.mToolbar.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
 }

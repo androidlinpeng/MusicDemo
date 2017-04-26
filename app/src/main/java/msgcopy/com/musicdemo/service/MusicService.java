@@ -14,7 +14,6 @@ import android.os.Message;
 
 import java.util.List;
 
-import msgcopy.com.musicdemo.LogUtil;
 import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.MusicPlayerActivity;
 import msgcopy.com.musicdemo.MyApplication;
@@ -25,6 +24,7 @@ import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.utils.CommonUtil;
+import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.utils.ToastUtils;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -82,7 +82,8 @@ public class MusicService extends Service {
             switch (msg.what) {
                 case 1:
                     if (mediaPlayer != null) {
-                        currentTime = mediaPlayer.getCurrentPosition(); // 获取当前音乐播放的位置
+                        try {
+                            currentTime = mediaPlayer.getCurrentPosition(); // 获取当前音乐播放的位置
 //                        Intent intent = new Intent();
 //                        intent.setAction(MUSIC_PLAYER_STATE);
 //                        Bundle bundle = new Bundle();
@@ -92,10 +93,12 @@ public class MusicService extends Service {
 //                        bundle.putBoolean("isPlaying", isPlaying);
 //                        intent.putExtras(bundle);
 //                        sendBroadcast(intent);
-                        handler.sendEmptyMessageDelayed(1, 100);
-
-                        PlayState playState = new PlayState(currentMusicPath,currentTime,mediaTime,isPlaying);
-                        RxBus.getInstance().post(playState);
+                            handler.sendEmptyMessageDelayed(1, 100);
+                            PlayState playState = new PlayState(currentMusicPath,currentTime,mediaTime,isPlaying);
+                            RxBus.getInstance().post(playState);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
 
                     }
                     break;
@@ -261,7 +264,15 @@ public class MusicService extends Service {
     }
 
     @Override
+    public boolean stopService(Intent name) {
+        LogUtil.i(TAG,"stopService:");
+        return super.stopService(name);
+
+    }
+
+    @Override
     public void onDestroy() {
+        LogUtil.i(TAG,"onDestroy:");
         super.onDestroy();
         try {
             if (mediaPlayer != null) {
@@ -269,6 +280,7 @@ public class MusicService extends Service {
                     mediaPlayer.stop();//停止音频的播放
                 }
                 mediaPlayer.release();//释放资源
+                mediaPlayer = null;
             }
         } catch (IllegalStateException e) {
             e.printStackTrace();

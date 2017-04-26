@@ -14,7 +14,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
-import msgcopy.com.musicdemo.NavigationUtil;
+import msgcopy.com.musicdemo.utils.NavigationUtil;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Album;
 import msgcopy.com.musicdemo.utils.ListenerUtil;

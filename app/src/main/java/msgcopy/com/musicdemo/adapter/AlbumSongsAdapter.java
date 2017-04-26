@@ -1,8 +1,6 @@
 package msgcopy.com.musicdemo.adapter;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,12 +14,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
-import msgcopy.com.musicdemo.Constants;
-import msgcopy.com.musicdemo.LogUtil;
-import msgcopy.com.musicdemo.MsgCache;
+import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
-import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
 
 /**
@@ -56,6 +51,7 @@ public class AlbumSongsAdapter extends RecyclerView.Adapter<AlbumSongsAdapter.It
         Glide.with(mContext)
                 .load(ListenerUtil.getAlbumArtUri(localItem.albumId).toString())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .placeholder(R.drawable.icon_album_default)
                 .centerCrop()
                 .into(itemHolder.albumArt);
 
@@ -108,16 +104,19 @@ public class AlbumSongsAdapter extends RecyclerView.Adapter<AlbumSongsAdapter.It
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Song song = arraylist.get(getAdapterPosition());
-                    Intent intentService = new Intent(mContext, MusicService.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString("currentMusicPath", song.path);
-                    bundle.putLong("songID", song.id);
-                    bundle.putInt("status", 0);
-                    intentService.putExtra("bundle", bundle);
-                    mContext.startService(intentService);
-                    MsgCache.get().put(Constants.MUSIC_INFO, song);
-                    LogUtil.i("MusicService2","song.path"+song.path+"-1--"+song.id+"-2--"+getAdapterPosition()+"-3-------"+arraylist.size());
+
+                    MusicPlayer.playAll(mContext,arraylist, getAdapterPosition());
+
+//                    MsgCache.get().put(Constants.MUSIC_LIST, arraylist);
+//                    Song song = arraylist.get(getAdapterPosition());
+//                    Intent intentService = new Intent(mContext, MusicService.class);
+//                    Bundle bundle = new Bundle();
+//                    bundle.putString("currentMusicPath", song.path);
+//                    bundle.putLong("songID", song.id);
+//                    bundle.putInt("status", 0);
+//                    intentService.putExtra("bundle", bundle);
+//                    mContext.startService(intentService);
+//                    MsgCache.get().put(Constants.MUSIC_INFO, song);
                 }
             }, 100);
 

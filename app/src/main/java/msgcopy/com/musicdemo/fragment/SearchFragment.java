@@ -1,13 +1,8 @@
 package msgcopy.com.musicdemo.fragment;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
@@ -23,19 +18,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import msgcopy.com.musicdemo.Constants;
-import msgcopy.com.musicdemo.MyApplication;
+import msgcopy.com.musicdemo.MainActivity;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.adapter.SearchListAdapter;
 import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.modul.Song;
-import msgcopy.com.musicdemo.permission.PermissionManager;
-import msgcopy.com.musicdemo.permission.PermissionUtils;
-import msgcopy.com.musicdemo.utils.ListenerUtil;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
-
-import static msgcopy.com.musicdemo.R.id.recyclerview;
 
 /**
  * Created by liang on 2017/4/21.
@@ -43,12 +33,16 @@ import static msgcopy.com.musicdemo.R.id.recyclerview;
 
 public class SearchFragment extends BaseFragment {
 
-    @BindView(recyclerview)
+    @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
+//    @BindView(R.id.toolbar)
+//    Toolbar mToolbar;
     @BindView(R.id.input)
     EditText input;
     @BindView(R.id.search)
     ImageView search;
+    @BindView(R.id.back)
+    ImageView back;
     @BindView(R.id.view_empty)
     RelativeLayout view_empty;
     private SearchListAdapter mAdapter;
@@ -65,6 +59,17 @@ public class SearchFragment extends BaseFragment {
         super.setUpView(view);
         ButterKnife.bind(this, view);
 
+//        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
+//        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+//        actionBar.setDisplayHomeAsUpEnabled(true);
+//        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                ((AppCompatActivity)getActivity()).getSupportFragmentManager().popBackStack();
+//                MainActivity.mToolbar.setVisibility(View.VISIBLE);
+//            }
+//        });
+
         mAdapter = new SearchListAdapter((AppCompatActivity) getActivity(), null, action, true);
         linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setOrientation(OrientationHelper.VERTICAL);
@@ -72,43 +77,44 @@ public class SearchFragment extends BaseFragment {
         recyclerView.addItemDecoration(new ItemListDivider(getActivity()));
         recyclerView.setAdapter(mAdapter);
 
+//
+
     }
 
-    @OnClick(R.id.search)
-    public void onClick(ImageView view){
-        String string = input.getText().toString();
-        updataMedia(string);
-    }
-
-
-    //应用启动时通知系统刷新媒体库,
-    private void updataMedia(String string) {
-        PermissionManager.init(MyApplication.getInstance());
-        //版本号的判断  4.4为分水岭，发送广播更新媒体库
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (ListenerUtil.isMarshmallow() && !PermissionManager.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                PermissionUtils.requestPermission(getActivity(), PermissionUtils.CODE_READ_EXTERNAL_STORAGE);
-            }
-            SongLoader.searchSongs(getActivity(), string)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<List<Song>>() {
-                        @Override
-                        public void call(List<Song> songs) {
-                            if (songs.size()>0) {
-                                mAdapter.setSongList(songs);
-                                recyclerView.setVisibility(View.VISIBLE);
-                                view_empty.setVisibility(View.GONE);
-                            }else {
-                                recyclerView.setVisibility(View.GONE);
-                                view_empty.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
-        } else {
-            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://"
-                    + Environment.getExternalStorageDirectory())));
+    @OnClick({R.id.search,R.id.back})
+    public void onClick(ImageView view) {
+        switch (view.getId()){
+            case R.id.search:
+                String string = input.getText().toString();
+                updataMedia(string);
+                break;
+            case R.id.back:
+                ((AppCompatActivity)getActivity()).getSupportFragmentManager().popBackStack();
+                MainActivity.mToolbar.setVisibility(View.VISIBLE);
+                break;
         }
+
+    }
+
+
+    private void updataMedia(String string) {
+
+        SongLoader.searchSongs(getActivity(), string)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<List<Song>>() {
+                    @Override
+                    public void call(List<Song> songs) {
+                        if (songs.size() > 0) {
+                            mAdapter.setSongList(songs);
+                            recyclerView.setVisibility(View.VISIBLE);
+                            view_empty.setVisibility(View.GONE);
+                        } else {
+                            recyclerView.setVisibility(View.GONE);
+                            view_empty.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
 
 
     }

@@ -16,7 +16,7 @@
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="330dp"
+            android:layout_height="250dp"
             android:background="?android:windowBackground"
             app:expandedTitleMarginBottom="25dp"
             app:expandedTitleMarginStart="30dp"
@@ -32,7 +32,8 @@
                 android:scaleType="centerCrop"
                 android:transitionName="transition_artist_image"
                 app:layout_collapseMode="parallax"
-                android:fitsSystemWindows="true"/>
+                android:fitsSystemWindows="true"
+                android:src="@drawable/icon_album_default"/>
 
             <View
                 android:id="@+id/gradient"
@@ -52,14 +53,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_view_songs"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingTop="10dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_play"
         style="@style/FabStyle"
@@ -71,6 +64,14 @@
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|right|end"
         android:tag="bg_tint_accent_color"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view_songs"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="10dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </android.support.design.widget.CoordinatorLayout>
 

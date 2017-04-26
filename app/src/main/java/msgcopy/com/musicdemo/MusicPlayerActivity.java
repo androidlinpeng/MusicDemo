@@ -1,12 +1,18 @@
 package msgcopy.com.musicdemo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.OrientationHelper;
+import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -21,6 +27,8 @@ import java.util.Formatter;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import msgcopy.com.musicdemo.adapter.PlayerSongListAdapter;
+import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
@@ -37,6 +45,8 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
     private static final String TAG = "MusicPlayerActivity";
 
     private final static String SP_ARTICLE_BRIGHT_KEY = "article_bright_display";
+
+    private ImageView player_list;
 
     private ImageView blurview = null;
 
@@ -167,6 +177,44 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     }
 
+
+    public void playerSongList(){
+        final PopupWindow popupWindow = new PopupWindow(this);
+        View view = getLayoutInflater().inflate(R.layout.view_player_song_list, null);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
+        ImageView playdelete = (ImageView) view.findViewById(R.id.play_list_delete);
+        final PlayerSongListAdapter mAdapter = new PlayerSongListAdapter(this, null, "", true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(OrientationHelper.VERTICAL);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.addItemDecoration(new ItemListDivider(this));
+        recyclerView.setAdapter(mAdapter);
+        mAdapter.setSongList(SongsFragment.getMusicList());
+        playdelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                MsgCache.get().remove(Constants.MUSIC_LIST);
+                popupWindow.dismiss();
+                MsgCache.get().clear();
+                Intent intent = new Intent();
+                Bundle bundle = new Bundle();
+                bundle.putBoolean("Result",true);
+                intent.putExtras(bundle);
+                setResult(RESULT_OK,intent);
+                finish();
+                stopService(new Intent(MusicPlayerActivity.this, MusicService.class));
+            }
+        });
+
+        popupWindow.setContentView(view);
+        popupWindow.setWidth(-1);
+        popupWindow.setHeight(getResources().getDisplayMetrics().heightPixels * 2/ 3);
+        popupWindow.setFocusable(true);
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setBackgroundDrawable(getResources().getDrawable(android.R.color.white));
+        popupWindow.showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
+    }
+
     private void subscribePlayState() {
         Subscription subscription = RxBus.getInstance()
                 .toObservable(PlayState.class)
@@ -220,6 +268,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private void initMediaController() {
 
+        this.player_list = (ImageView)findViewById(R.id.imag_player_list);
         this.music_share = (ImageView)findViewById(R.id.music_share);
         this.panel_back = (ImageView)findViewById(R.id.panel_back);
         this.player_pattern = (RelativeLayout)findViewById(R.id.player_pattern);
@@ -242,7 +291,6 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
                     if (fromUser) {
                         long newposition = (duration * progress) / 1000L;
 //                        long newposition = 1000L * progress / duration;
-                        LogUtil.i(TAG, "seekBar "+duration+"------"+newposition);
                         sendBroadcast(newposition);
                     }
 
@@ -261,6 +309,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
             this.mediaProgress.setMax(1000);
         }
 
+        this.player_list.setOnClickListener(this);
         this.play.setOnClickListener(this);
         this.last.setOnClickListener(this);
         this.next.setOnClickListener(this);
@@ -381,6 +430,9 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
             case R.id.music_share:
                 showMorePanel();
                 break;
+            case R.id.imag_player_list:
+                playerSongList();
+                break;
         }
     }
 
@@ -457,6 +509,34 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.screenBrightness = bright;
         getWindow().setAttributes(lp);
+    }
+
+    private static class ItemListDivider extends RecyclerView.ItemDecoration {
+
+        private Drawable drawable = null;
+
+        public ItemListDivider(Context cxt) {
+            this.drawable = cxt.getResources().getDrawable(R.drawable.divider_article_list);
+        }
+
+        @Override
+        public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+            int left = parent.getPaddingLeft();
+            int right = parent.getWidth() - parent.getPaddingRight();
+
+            int childCount = parent.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View child = parent.getChildAt(i);
+
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+
+                int top = child.getBottom() + params.bottomMargin;
+                int bottom = top + drawable.getIntrinsicHeight();
+
+                drawable.setBounds(left, top, right, bottom);
+                drawable.draw(c);
+            }
+        }
     }
 
 }

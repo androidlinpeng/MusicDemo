@@ -111,7 +111,7 @@ public class SongsFragment extends BaseFragment {
                                 Log.i("songList", "" + song.id);
                             }
                             mAdapter.setSongList(musicList);
-                            MsgCache.get().put(Constants.MUSIC_LIST, musicList);
+
                             return folderPath.toArray(new String[0]);
                         }
                     })

@@ -1,4 +1,4 @@
-package msgcopy.com.musicdemo;
+package msgcopy.com.musicdemo.utils;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -11,10 +11,11 @@ import android.transition.TransitionInflater;
 import android.util.Pair;
 import android.view.View;
 
+import msgcopy.com.musicdemo.Constants;
+import msgcopy.com.musicdemo.MainActivity;
+import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.adapter.AlbumDetailFragment;
 import msgcopy.com.musicdemo.fragment.ArtistDetailFragment;
-import msgcopy.com.musicdemo.utils.ListenerUtil;
-import msgcopy.com.musicdemo.utils.ViewUtils;
 
 import static msgcopy.com.musicdemo.MainActivity.mCurrentFragment;
 import static msgcopy.com.musicdemo.utils.ListenerUtil.isLollipop;
@@ -30,7 +31,7 @@ public class NavigationUtil {
     public static void navigateToAlbum(Activity context, long albumID, String albumName, Pair<View, String> transitionViews) {
 
         FragmentTransaction transaction = ((AppCompatActivity) context).getSupportFragmentManager().beginTransaction();
-        Fragment fragment = ViewUtils.createFragment(AlbumDetailFragment.class);
+        Fragment fragment = ViewUtils.createFragment(AlbumDetailFragment.class,false);
 
         if (isLollipop() && transitionViews != null) {
             Transition changeImage = TransitionInflater.from(context).inflateTransition(R.transition.image_transform);
@@ -52,6 +53,8 @@ public class NavigationUtil {
             args.putString("transition_name", null);
             fragment.setArguments(args);
         }
+
+        MainActivity.mToolbar.setVisibility(View.GONE);
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.hide(mCurrentFragment).add(R.id.frame_content, fragment).addToBackStack(null).commit();
         mCurrentFragment = fragment;
@@ -60,7 +63,7 @@ public class NavigationUtil {
     @TargetApi(21)
     public static void navigateToArtist(Activity context, long artistID, String name, Pair<View, String> transitionViews) {
         FragmentTransaction transaction = ((AppCompatActivity) context).getSupportFragmentManager().beginTransaction();
-        Fragment fragment = ViewUtils.createFragment(ArtistDetailFragment.class);
+        Fragment fragment = ViewUtils.createFragment(ArtistDetailFragment.class,false);
 
         if (ListenerUtil.isLollipop() && transitionViews != null) {
             Transition changeImage = TransitionInflater.from(context).inflateTransition(R.transition.image_transform);
@@ -83,6 +86,7 @@ public class NavigationUtil {
             fragment.setArguments(args);
         }
 
+        MainActivity.mToolbar.setVisibility(View.GONE);
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.hide(mCurrentFragment).add(R.id.frame_content, fragment).addToBackStack(null).commit();
         mCurrentFragment = fragment;

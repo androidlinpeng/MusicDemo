@@ -47,4 +47,5 @@ public class Constants {
     public static final String BASE_API_URL_KUGOU = "http://lyrics.kugou.com/";
 
     public static final String TRANSITION_NAME = "transition_name";
+
 }

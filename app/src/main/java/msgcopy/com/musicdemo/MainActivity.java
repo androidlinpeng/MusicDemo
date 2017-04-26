@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -36,12 +37,13 @@ import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
-import msgcopy.com.musicdemo.utils.ToastUtils;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
+
+import static msgcopy.com.musicdemo.R.id.toolbar;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private DrawerLayout mDrawerLayout;//侧边菜单视图
     private ActionBarDrawerToggle mDrawerToggle;  //菜单开关
-    private Toolbar mToolbar;
+    public static Toolbar mToolbar;
     private AppBarLayout appBar;
     private NavigationView mNavigationView;//侧边菜单项
     private RelativeLayout playerbottom;
@@ -69,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private int currentTime;
 
+    public final static int REQUEST_REG = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,8 +89,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setContentView(R.layout.activity_main);
 
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar = (Toolbar) findViewById(toolbar);
         setSupportActionBar(mToolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
 
         mToolbar.setTitle(R.string.str_home);
 
@@ -110,6 +116,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK){
+            switch (requestCode){
+                case REQUEST_REG:
+                    if (data.getExtras().getBoolean("Result")){
+                        currentsong = null;
+                        initView();
+                    }
+                    break;
+            }
+        }
+    }
+
     private void initView() {
         appBar = (AppBarLayout) findViewById(R.id.appBar);
         playerbottom = (RelativeLayout) findViewById(R.id.player_bottom);
@@ -119,6 +140,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         text_song_artist = (TextView) findViewById(R.id.text_song_artist);
         this.mediaProgress = (SeekBar) findViewById(R.id.seek_song_touch);
         this.mediaProgress.setMax(1000);
+        //清除默认的左右边距
+        mediaProgress.setPadding(0, 0, 0, 0);
+//        mediaProgress.setSecondaryProgress(mediaProgress.getMax());
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -140,8 +164,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.player_bottom:
-                startActivity(new Intent(this, MusicPlayerActivity.class));
-                overridePendingTransition(R.anim.leftin,R.anim.leftout);
+                if (!CommonUtil.isBlank(currentsong)) {
+                    startActivityForResult(new Intent(this, MusicPlayerActivity.class),REQUEST_REG);
+                    overridePendingTransition(R.anim.leftin,R.anim.leftout);
+                }
                 break;
             case R.id.imag_player_bottom:
                 if (!CommonUtil.isBlank(currentsong)) {
@@ -169,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void initDefaultFragment() {
         mToolbar.setTitle(R.string.str_home);
         mFragmentManager = getSupportFragmentManager();
-        mCurrentFragment = ViewUtils.createFragment(MainFragment.class);
+        mCurrentFragment = ViewUtils.createFragment(MainFragment.class,true);
         mFragmentManager.beginTransaction().add(R.id.frame_content, mCurrentFragment).commit();
 
         mNavigationView.getMenu().getItem(0).setChecked(true);
@@ -210,7 +236,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             switchFragment(MainFragment.class);
         } else if (id == R.id.nav_search) {
             mToolbar.setTitle(R.string.str_search);
-            switchFragment(SearchFragment.class);
+            backStackFragment(SearchFragment.class);
+            mToolbar.setVisibility(View.GONE);
         } else if (id == R.id.nav_theme) {
             mToolbar.setTitle(R.string.str_theme);
         } else if (id == R.id.nav_music_hall) {
@@ -231,15 +258,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    public void backStackFragment(Class<?> mclass) {
+        Fragment fragment = ViewUtils.createFragment(mclass,false);
+        mFragmentManager.beginTransaction().hide(mCurrentFragment).add(R.id.frame_content, fragment).addToBackStack(null).commit();
+        mCurrentFragment = fragment;
+    }
 
-    public void switchFragment(Class<?> mclass) {
-        Fragment fragment = ViewUtils.createFragment(mclass);
+    public Fragment switchFragment(Class<?> mclass) {
+        Fragment fragment = ViewUtils.createFragment(mclass,true);
         if (fragment.isAdded()) {
             mFragmentManager.beginTransaction().hide(mCurrentFragment).show(fragment).commitAllowingStateLoss();
         } else {
             mFragmentManager.beginTransaction().hide(mCurrentFragment).add(R.id.frame_content, fragment).commitAllowingStateLoss();
         }
         mCurrentFragment = fragment;
+        return mCurrentFragment;
     }
 
     private void subscribeChangedSong() {
@@ -328,15 +361,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             switch (keyBackClickCount++) {
                 case 0:
+                    mToolbar.setVisibility(View.VISIBLE);
                     getSupportFragmentManager().popBackStack();
-                    ToastUtils.showShort(this, R.string.str_press_again_to_exit);
+//                    ToastUtils.showShort(this, R.string.str_press_again_to_exit);
                     Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
                             keyBackClickCount = 0;
                         }
-                    }, 3000);
+                    }, 500);
                     break;
                 case 1:
                     finish();

@@ -16,8 +16,8 @@ import com.google.gson.Gson;
 
 import java.util.List;
 
-import msgcopy.com.musicdemo.LogUtil;
-import msgcopy.com.musicdemo.NavigationUtil;
+import msgcopy.com.musicdemo.utils.LogUtil;
+import msgcopy.com.musicdemo.utils.NavigationUtil;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Artist;
 import msgcopy.com.musicdemo.modul.ArtistArt;

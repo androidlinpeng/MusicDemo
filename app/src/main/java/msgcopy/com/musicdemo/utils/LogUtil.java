@@ -1,4 +1,4 @@
-package msgcopy.com.musicdemo;
+package msgcopy.com.musicdemo.utils;
 
 public class LogUtil {
 	public static boolean isDebug = true;
