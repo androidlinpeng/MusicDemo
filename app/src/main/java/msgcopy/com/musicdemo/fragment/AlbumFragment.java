@@ -97,16 +97,13 @@ public class AlbumFragment extends BaseFragment {
 
     }
 
-    //应用启动时通知系统刷新媒体库,
     private void updataMedia() {
-        //版本号的判断  4.4为分水岭，发送广播更新媒体库
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             AlbumLoader.getAllAlbums(getActivity())
                     .map(new Func1<List<Album>, String[]>() {
                         @Override
                         public String[] call(List<Album> albumList) {
                             List<String> folderPath = new ArrayList<String>();
-                            int i = 0;
                             List<Album> musicList = new ArrayList<Album>();
                             for (Album album : albumList) {
                                 musicList.add(album);
@@ -146,15 +143,6 @@ public class AlbumFragment extends BaseFragment {
         recyclerView.addItemDecoration(itemDecoration);
     }
 
-    private void updateLayoutManager(int column) {
-        recyclerView.removeItemDecoration(itemDecoration);
-        mAdapter = new AlbumAdapter(getActivity(), action);
-        recyclerView.setAdapter(mAdapter);
-        layoutManager.setSpanCount(column);
-        layoutManager.requestLayout();
-        setItemDecoration();
-//        mPresenter.loadArtists(action);
-    }
 
     public static class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         private int space;

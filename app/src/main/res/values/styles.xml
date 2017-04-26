@@ -1,5 +1,8 @@
 <resources>
 
+    <attr format="reference" name="ttPopupMenuStyle" />
+    <attr format="reference" name="cardStyle"/>
+
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
@@ -28,6 +31,24 @@
         <item name="android:singleLine">true</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:lineSpacingExtra">0.0px</item>
+    </style>
+
+    <style name="TextApperance.Album.Title" parent="@style/TextAppearance.AppCompat.Large">
+        <item name="android:textSize">29sp</item>
+    </style>
+
+    <style name="TextApperance.Artist.Title" parent="@style/TextAppearance.AppCompat.Large">
+        <item name="android:textSize">29sp</item>
+    </style>
+
+    <style name="FabStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">16dp</item>
+        <item name="borderWidth">0dp</item>
+        <item name="elevation">6dp</item>
+        <item name="pressedTranslationZ">12dp</item>
+        <item name="rippleColor">@android:color/white</item>
     </style>
 
 

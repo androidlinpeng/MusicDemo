@@ -5,22 +5,11 @@
     android:layout_height="fill_parent"
     android:gravity="center_vertical">
 
-    <ImageView
-        android:id="@+id/image_empty"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/icon_empty_view" />
+    <include layout="@layout/layout_empty_view_default"/>
 
-    <TextView
-        android:id="@+id/text_empty_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/image_empty"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:text="@string/content_empty_default"
-        android:textColor="?android:textColorSecondary" />
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>

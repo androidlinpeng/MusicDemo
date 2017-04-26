@@ -46,7 +46,7 @@ import rx.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private FragmentManager mFragmentManager;
-    private Fragment mCurrentFragment;
+    public static Fragment mCurrentFragment;
 
     private DrawerLayout mDrawerLayout;//侧边菜单视图
     private ActionBarDrawerToggle mDrawerToggle;  //菜单开关
@@ -165,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
     }
-
 
     private void initDefaultFragment() {
         mToolbar.setTitle(R.string.str_home);
@@ -329,6 +328,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             switch (keyBackClickCount++) {
                 case 0:
+                    getSupportFragmentManager().popBackStack();
                     ToastUtils.showShort(this, R.string.str_press_again_to_exit);
                     Timer timer = new Timer();
                     timer.schedule(new TimerTask() {

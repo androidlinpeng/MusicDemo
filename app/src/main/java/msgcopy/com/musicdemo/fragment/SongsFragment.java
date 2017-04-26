@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
@@ -45,7 +44,7 @@ import static msgcopy.com.musicdemo.Constants.MUSIC_LIST;
  * Created by liang on 2017/4/14.
  */
 
-public class SongsFragment extends BaseFragment implements ActivityCompat.OnRequestPermissionsResultCallback{
+public class SongsFragment extends BaseFragment {
 
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
@@ -80,7 +79,6 @@ public class SongsFragment extends BaseFragment implements ActivityCompat.OnRequ
             action = getArguments().getString(Constants.PLAYLIST_TYPE);
         }
         mAdapter = new SongsListAdapter((AppCompatActivity) getActivity(), null, action, true);
-//        recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
         linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setOrientation(OrientationHelper.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -110,7 +108,7 @@ public class SongsFragment extends BaseFragment implements ActivityCompat.OnRequ
                                 folderPath.add(i, song.path);
                                 i++;
                                 musicList.add(song);
-                                Log.i("songList", "" + song.path);
+                                Log.i("songList", "" + song.id);
                             }
                             mAdapter.setSongList(musicList);
                             MsgCache.get().put(Constants.MUSIC_LIST, musicList);

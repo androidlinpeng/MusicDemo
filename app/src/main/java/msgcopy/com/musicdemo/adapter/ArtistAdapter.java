@@ -3,6 +3,7 @@ package msgcopy.com.musicdemo.adapter;
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.google.gson.Gson;
 import java.util.List;
 
 import msgcopy.com.musicdemo.LogUtil;
+import msgcopy.com.musicdemo.NavigationUtil;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Artist;
 import msgcopy.com.musicdemo.modul.ArtistArt;
@@ -141,7 +143,8 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ItemHolder
 
         @Override
         public void onClick(View v) {
-
+            NavigationUtil.navigateToArtist(mContext, arraylist.get(getAdapterPosition()).id, arraylist.get(getAdapterPosition()).name,
+                    new Pair<View, String>(artistImage, "transition_artist_art" + getAdapterPosition()));
         }
     }
 }

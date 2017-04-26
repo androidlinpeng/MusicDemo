@@ -13,6 +13,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import msgcopy.com.musicdemo.R;
+import msgcopy.com.musicdemo.utils.PreferencesUtility;
 
 /**
  * Created by liang on 2017/4/14.
@@ -22,19 +23,25 @@ public class MainFragment extends BaseFragment {
 
     public static final String NAVIGATE_ALLSONG = "navigate_all_song";
 
+//    @BindView(R.id.toolbar)
+//    Toolbar toolbar;
     @BindView(R.id.tabs)
     TabLayout tabLayout;
     @BindView(R.id.viewpager)
     ViewPager viewPager;
 
+    private PreferencesUtility mPreferences;
+
     @Override
     protected void setUpView(View view) {
         ButterKnife.bind(this, view);
+
+        mPreferences = PreferencesUtility.getInstance(getActivity());
         tabLayout.setupWithViewPager(viewPager);
         if (viewPager != null) {
             setupViewPager(viewPager);
             viewPager.setOffscreenPageLimit(2);
-            viewPager.setCurrentItem(0);
+            viewPager.setCurrentItem(mPreferences.getStartPageIndex());
         }
     }
 
@@ -83,7 +90,11 @@ public class MainFragment extends BaseFragment {
         }
     }
 
-
+    @Override
+    public void onPause() {
+        super.onPause();
+        mPreferences.setStartPageIndex(viewPager.getCurrentItem());
+    }
 }
 
 

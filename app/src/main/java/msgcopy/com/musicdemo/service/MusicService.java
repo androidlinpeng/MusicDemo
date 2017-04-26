@@ -147,6 +147,12 @@ public class MusicService extends Service {
             this.status = bundle.getInt("status");
             this.songID = bundle.getLong("songID");
         }
+//        Bundle onlinebundle = intent.getBundleExtra("onlinebundle");
+//        if (null != onlinebundle) {
+//            this.currentMusicPath = bundle.getString("currentMusicPath");
+//            this.status = bundle.getInt("status");
+//            this.songID = bundle.getLong("songID");
+//        }
         pattern = MusicPlayerActivity.getPlayerPattern();
         if (this.status == 0) {
             play(currentMusicPath);
@@ -175,6 +181,7 @@ public class MusicService extends Service {
      */
     private void play(String path) {
         try {
+            LogUtil.i(TAG,"pathsong"+path);
             SongLoader.getSongForID(MyApplication.getInstance(),songID)
                     .subscribeOn(Schedulers.io())
                     .subscribe(new Action1<Song>() {
@@ -185,6 +192,7 @@ public class MusicService extends Service {
                     });
             mediaPlayer.reset();// 把各项参数恢复到初始状态
             mediaPlayer.setDataSource(path);
+//            mediaPlayer.setDataSource(path);
             mediaPlayer.prepare(); // 进行缓冲
             mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
             mediaTime = mediaPlayer.getDuration();

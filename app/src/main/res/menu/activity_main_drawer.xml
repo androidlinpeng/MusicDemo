@@ -7,6 +7,10 @@
             android:icon="@drawable/ic_menu_camera"
             android:title="@string/str_home" />
         <item
+            android:id="@+id/nav_music_hall"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="@string/str_music_hall" />
+        <item
             android:id="@+id/nav_search"
             android:icon="@drawable/ic_menu_gallery"
             android:title="@string/str_search" />
@@ -14,10 +18,7 @@
             android:id="@+id/nav_theme"
             android:icon="@drawable/ic_menu_gallery"
             android:title="@string/str_theme" />
-        <item
-            android:id="@+id/nav_music_hall"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="@string/str_music_hall" />
+
         <item
             android:id="@+id/nav_collect"
             android:icon="@drawable/ic_menu_manage"

@@ -25,6 +25,10 @@
 
     <dimen name="base_horizontal_divider_height">1px</dimen>
     <dimen name="spacing_card_album_grid">4dp</dimen>
+    <dimen name="app_bar_height">180dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+
+    <dimen name="spacing_card">16dp</dimen>
 
 
 </resources>

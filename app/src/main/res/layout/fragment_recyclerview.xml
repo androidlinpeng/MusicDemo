@@ -4,6 +4,11 @@
     android:layout_height="match_parent"
     android:layout_marginBottom="@dimen/sliding_up_header">
 
+    <!--<FrameLayout-->
+        <!--android:id="@+id/frame_content"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"/>-->
+
     <include layout="@layout/layout_empty_view_default"/>
 
     <android.support.v7.widget.RecyclerView

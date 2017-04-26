@@ -2,6 +2,7 @@ package msgcopy.com.musicdemo.adapter;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
+import msgcopy.com.musicdemo.NavigationUtil;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Album;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
@@ -104,7 +106,8 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ItemHolder>{
 
         @Override
         public void onClick(View v) {
-
+            NavigationUtil.navigateToAlbum(mContext, arraylist.get(getAdapterPosition()).id,
+                    arraylist.get(getAdapterPosition()).title,new Pair<View, String>(albumArt, "transition_album_art" + getAdapterPosition()));
         }
     }
 }

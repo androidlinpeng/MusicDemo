@@ -6,7 +6,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import java.util.List;
+
 import msgcopy.com.musicdemo.fragment.MusicHallListFragment;
+import msgcopy.com.musicdemo.modul.SongList;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 
 /**
@@ -16,30 +19,31 @@ import msgcopy.com.musicdemo.utils.ViewUtils;
 public class MusicHallPagerAdapter extends FragmentStatePagerAdapter {
 
     private static String TAG = "MusicHallPagerAdapter";
-    private static String[] mTitles;
+//    private static String[] mTitles;
+    private List<SongList.ContentBeanX> mlist;
 
-    public MusicHallPagerAdapter(FragmentManager fm, String[] titles) {
+    public MusicHallPagerAdapter(FragmentManager fm, List<SongList.ContentBeanX> list) {
         super(fm);
-        mTitles = titles;
+        this.mlist = list;
     }
 
     @Override
     public Fragment getItem(int position) {
         Fragment fragment = ViewUtils.createFragment(MusicHallListFragment.class, false);
         Bundle bundle = new Bundle();
-        bundle.putString("type", mTitles[position]);
+        bundle.putString("type", ""+mlist.get(position).getType());
         fragment.setArguments(bundle);
         return fragment;
     }
 
     @Override
     public int getCount() {
-        return mTitles.length;
+        return mlist.size();
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return mTitles[position];
+        return mlist.get(position).getName();
     }
 
     @Override

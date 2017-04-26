@@ -28,7 +28,7 @@ import msgcopy.com.musicdemo.fragment.BaseFragment;
     public static BaseFragment createFragment(Class<?> clazz, boolean isObtain) {
         BaseFragment resultFragment = null;
         String className = clazz.getName();
-        if (fragmentList.containsKey(className)) {
+        if (fragmentList.containsKey(className)&&!fragmentList.containsKey("msgcopy.com.musicdemo.adapter.AlbumDetailFragment")&&!fragmentList.containsKey("msgcopy.com.musicdemo.fragment.ArtistDetailFragment")) {
             resultFragment = fragmentList.get(className);
         } else {
             try {
