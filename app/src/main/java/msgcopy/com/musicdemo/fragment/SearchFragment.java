@@ -7,7 +7,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -31,7 +36,7 @@ import rx.schedulers.Schedulers;
  * Created by liang on 2017/4/21.
  */
 
-public class SearchFragment extends BaseFragment {
+public class SearchFragment extends BaseFragment implements SearchView.OnQueryTextListener, View.OnTouchListener{
 
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
@@ -49,6 +54,10 @@ public class SearchFragment extends BaseFragment {
     private LinearLayoutManager linearLayoutManager;
     private String action = Constants.PLAYLIST_TYPE;
 
+    private SearchView mSearchView;
+    private String queryString;
+    private InputMethodManager mImm;
+
     @Override
     protected int setLayoutResourceID() {
         return R.layout.fragment_search;
@@ -59,17 +68,6 @@ public class SearchFragment extends BaseFragment {
         super.setUpView(view);
         ButterKnife.bind(this, view);
 
-//        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
-//        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-//        actionBar.setDisplayHomeAsUpEnabled(true);
-//        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                ((AppCompatActivity)getActivity()).getSupportFragmentManager().popBackStack();
-//                MainActivity.mToolbar.setVisibility(View.VISIBLE);
-//            }
-//        });
-
         mAdapter = new SearchListAdapter((AppCompatActivity) getActivity(), null, action, true);
         linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setOrientation(OrientationHelper.VERTICAL);
@@ -77,7 +75,11 @@ public class SearchFragment extends BaseFragment {
         recyclerView.addItemDecoration(new ItemListDivider(getActivity()));
         recyclerView.setAdapter(mAdapter);
 
-//
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
 
     }
 
@@ -96,9 +98,7 @@ public class SearchFragment extends BaseFragment {
 
     }
 
-
     private void updataMedia(String string) {
-
         SongLoader.searchSongs(getActivity(), string)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -115,8 +115,21 @@ public class SearchFragment extends BaseFragment {
                         }
                     }
                 });
+    }
 
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
 
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        return false;
     }
 
 

@@ -22,7 +22,6 @@ import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
-import msgcopy.com.musicdemo.utils.LogUtil;
 
 
 public class PlayerSongListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -69,9 +68,7 @@ public class PlayerSongListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             @Override
             public void onClick(View view) {
                 try {
-                    LogUtil.i("position",localItem.title+"----------"+position+"----"+arraylist.size());
                     arraylist.remove(position);
-                    LogUtil.i("position","arraylist.size()----"+arraylist.size());
                     if (arraylist.size()!= 0){
                         notifyItemRemoved(position);
                     }

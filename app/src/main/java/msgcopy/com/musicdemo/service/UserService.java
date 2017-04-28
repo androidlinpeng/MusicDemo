@@ -15,13 +15,13 @@ import rx.Observable;
 public interface UserService {
 
     @GET(APIUrl.path_song_url)
-    Observable<Songurl> getSongPath();
+    Observable<Songurl> getSongPath(@Query("songid") String songid);
 
     @GET(APIUrl.path_song_list)
     Observable<SongList> getSongListData();
 
     @GET(APIUrl.path_new_song)
-    Observable<NewSong> getGetData(@Query("type") String type);
+    Observable<NewSong> getGetData(@Query("type") String type,@Query("size") String size);
 }
 
 

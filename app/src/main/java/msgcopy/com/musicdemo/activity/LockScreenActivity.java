@@ -1,8 +1,8 @@
 package msgcopy.com.musicdemo.activity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.WindowManager;
@@ -19,13 +19,15 @@ import msgcopy.com.musicdemo.RxBus;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
+import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
+import msgcopy.com.musicdemo.view.BlurringView;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class LockScreenActivity extends AppCompatActivity {
+public class LockScreenActivity extends SwipeBackActivity {
 
     private static final String TAG = "LockScreenActivity";
 
@@ -42,6 +44,15 @@ public class LockScreenActivity extends AppCompatActivity {
     @BindView(R.id.lock_screen_subtitle_2)
     TextView lockscreensubtitle_2;
 
+
+    @BindView(R.id.blur_view)
+    ImageView blur_view;
+    @BindView(R.id.blurring_view)
+    BlurringView blurring_view;
+    @BindView(R.id.civ_test)
+    ImageView civ_test;
+
+
     private Song currentsong;
     private boolean isPlaying = false;
 
@@ -49,28 +60,46 @@ public class LockScreenActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         //越过手机锁屏界面
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+
         try {
             currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen);
         ButterKnife.bind(this);
 
         if (!CommonUtil.isBlank(currentsong)) {
-            lockscreentitle.setText(currentsong.title);
-            lockscreensubtitle.setText(currentsong.artistName);
-            lockscreensubtitle_2.setText(currentsong.albumName);
+            initView(currentsong);
         }
         subscribeChangedSong();
         subscribePlayState();
 
-        swipeGestures();
+//        swipeGestures();
+    }
+
+    private void initView(Song song) {
+        Bitmap bitmap = BitmapUtils.createAlbumArt(song.path);
+        lockscreentitle.setText(song.title);
+        lockscreensubtitle.setText(song.artistName);
+        lockscreensubtitle_2.setText(song.albumName);
+        blurring_view.setBlurRadius(8);
+        blurring_view.setDownsampleFactor(8);
+        if (CommonUtil.isBlank(bitmap)) {
+            blur_view.setImageResource(R.drawable.icon_album_dark);
+            civ_test.setImageResource(R.drawable.icon_album_dark);
+        } else {
+            blur_view.setImageBitmap(bitmap);
+            civ_test.setImageBitmap(bitmap);
+        }
+        blur_view.setBackgroundResource(R.color.transparent);
+        blurring_view.setBlurredView(blur_view);
+        blurring_view.invalidate();
+        currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
     }
 
     private void swipeGestures() {
@@ -78,13 +107,11 @@ public class LockScreenActivity extends AppCompatActivity {
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                 // e1: 第一次按下的位置   e2:  当手离开屏幕 时的位置  velocityX:  沿x 轴的速度  velocityY： 沿Y轴方向的速度
-
                 //向上滑动关闭
                 if ((e1.getRawY() - e2.getRawY() ) > 100){
                     finish();
                     return true;//消费掉当前事件
                 }
-
                 return super.onFling(e1, e2, velocityX, velocityY);
             }
         });
@@ -140,10 +167,7 @@ public class LockScreenActivity extends AppCompatActivity {
                 .subscribe(new Action1<Song>() {
                     @Override
                     public void call(Song song) {
-                        lockscreentitle.setText(song.title);
-                        lockscreensubtitle.setText(song.artistName);
-                        lockscreensubtitle_2.setText(song.albumName);
-                        currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
+                        initView(song);
                     }
                 }, new Action1<Throwable>() {
                     @Override

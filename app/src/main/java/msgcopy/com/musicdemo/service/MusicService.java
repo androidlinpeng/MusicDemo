@@ -11,11 +11,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 
 import java.util.List;
 
+import msgcopy.com.musicdemo.HttpUser;
 import msgcopy.com.musicdemo.MsgCache;
-import msgcopy.com.musicdemo.MusicPlayerActivity;
+import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.RxBus;
 import msgcopy.com.musicdemo.activity.LockScreenActivity;
@@ -23,9 +25,11 @@ import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.modul.Songurl;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.utils.ToastUtils;
+import rx.Subscriber;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
@@ -46,7 +50,7 @@ public class MusicService extends Service {
 
     public static final String MUSIC_CURRENT_POSITION = "music_current_position";  //当前音乐播放时间更新动作
 
-    public static final String MUSIC_SCREEN_OFF= "music_screen_off";
+    public static final String MUSIC_SCREEN_OFF = "music_screen_off";
 
     public static final String MUSIC_PLAYER_STATE = "music_player_state";
 
@@ -94,9 +98,9 @@ public class MusicService extends Service {
 //                        intent.putExtras(bundle);
 //                        sendBroadcast(intent);
                             handler.sendEmptyMessageDelayed(1, 100);
-                            PlayState playState = new PlayState(currentMusicPath,currentTime,mediaTime,isPlaying);
+                            PlayState playState = new PlayState(currentMusicPath, currentTime, mediaTime, isPlaying, false);
                             RxBus.getInstance().post(playState);
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
 
@@ -115,7 +119,7 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
         LogUtil.i(TAG, "onCreate ");
-        pattern = MusicPlayerActivity.getPlayerPattern();
+        pattern = MusicPlayer.getPlayerPattern();
         mediaPlayer = new MediaPlayer();
         myReceiver = new MyReceiver();
         IntentFilter filter = new IntentFilter();
@@ -127,7 +131,7 @@ public class MusicService extends Service {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                pattern = MusicPlayerActivity.getPlayerPattern();
+                pattern = MusicPlayer.getPlayerPattern();
                 if (pattern == 10) {
                     sendPlayerStatus(3, pattern);
                 } else if (pattern == 11) {
@@ -150,13 +154,7 @@ public class MusicService extends Service {
             this.status = bundle.getInt("status");
             this.songID = bundle.getLong("songID");
         }
-//        Bundle onlinebundle = intent.getBundleExtra("onlinebundle");
-//        if (null != onlinebundle) {
-//            this.currentMusicPath = bundle.getString("currentMusicPath");
-//            this.status = bundle.getInt("status");
-//            this.songID = bundle.getLong("songID");
-//        }
-        pattern = MusicPlayerActivity.getPlayerPattern();
+        pattern = MusicPlayer.getPlayerPattern();
         if (this.status == 0) {
             play(currentMusicPath);
         } else if (this.status == 1) {
@@ -178,14 +176,38 @@ public class MusicService extends Service {
         }
     }
 
+    public String getHttp(final String songid) {
+        LogUtil.i(TAG, "getHttp" + Long.parseLong(songid));
+        //git请求
+        Subscriber<Songurl> subscriberGet = new Subscriber<Songurl>() {
+            @Override
+            public void onCompleted() {
+                Log.i(TAG, "onCompleted:");
+            }
+
+            @Override
+            public void onError(Throwable onError) {
+                Log.i(TAG, "onError:" + onError.getMessage());
+            }
+
+            @Override
+            public void onNext(Songurl songurl) {
+                currentMusicPath = songurl.getBitrate().getFile_link();
+                play(currentMusicPath);
+            }
+        };
+        new HttpUser().getSongPath(subscriberGet, songid);
+
+        return currentMusicPath;
+    }
+
 
     /**
      * 播放音乐
      */
     private void play(String path) {
         try {
-            LogUtil.i(TAG,"pathsong"+path);
-            SongLoader.getSongForID(MyApplication.getInstance(),songID)
+            SongLoader.getSongForID(MyApplication.getInstance(), songID)
                     .subscribeOn(Schedulers.io())
                     .subscribe(new Action1<Song>() {
                         @Override
@@ -195,7 +217,6 @@ public class MusicService extends Service {
                     });
             mediaPlayer.reset();// 把各项参数恢复到初始状态
             mediaPlayer.setDataSource(path);
-//            mediaPlayer.setDataSource(path);
             mediaPlayer.prepare(); // 进行缓冲
             mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
             mediaTime = mediaPlayer.getDuration();
@@ -265,14 +286,14 @@ public class MusicService extends Service {
 
     @Override
     public boolean stopService(Intent name) {
-        LogUtil.i(TAG,"stopService:");
+        LogUtil.i(TAG, "stopService:");
         return super.stopService(name);
 
     }
 
     @Override
     public void onDestroy() {
-        LogUtil.i(TAG,"onDestroy:");
+        LogUtil.i(TAG, "onDestroy:");
         super.onDestroy();
         try {
             if (mediaPlayer != null) {
@@ -317,15 +338,11 @@ public class MusicService extends Service {
                     Bundle bundle = intent.getExtras();
                     long position = bundle.getLong("newposition");
                     mediaPlayer.seekTo((int) position);
-                    LogUtil.i(TAG, "currentposition" + position);
-                }else if (action.equals(Intent.ACTION_SCREEN_OFF)){
+                } else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
                     Intent lockscreen = new Intent(MusicService.this, LockScreenActivity.class);
                     lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    lockscreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(lockscreen);
-                }else if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
+                } else if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
                     if (intent.hasExtra("state")) {
                         int state = intent.getIntExtra("state", 0);
                         if (state == 1) {//插入耳机

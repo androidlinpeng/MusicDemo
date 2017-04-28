@@ -13,6 +13,12 @@
         android:scaleType="fitXY"
         android:src="@drawable/icon_album_dark" />
 
+    <msgcopy.com.musicdemo.view.BlurringView
+        android:id="@+id/blurring_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:overlayColor="#20000000"/>
+
 
     <RelativeLayout
         android:id="@+id/rl_musicname"
@@ -21,7 +27,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="2dp"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="20dp">
 
         <ImageButton
             android:id="@+id/panel_back"
@@ -59,7 +65,7 @@
             android:singleLine="true"
             android:textColor="#ffffff"
             android:text="222222"
-            android:textSize="18sp" />
+            android:textSize="20sp" />
 
     </RelativeLayout>
 
@@ -69,6 +75,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/rl_musicname"
+        android:layout_marginTop="8dp"
         android:layout_centerHorizontal="true">
 
         <View
@@ -89,7 +96,7 @@
             android:gravity="center"
             android:singleLine="true"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="18sp" />
 
         <View
             android:id="@+id/artist_Right"
@@ -103,14 +110,23 @@
 
     </RelativeLayout>
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/civ_test"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_above="@+id/bottom_time"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:src="@drawable/icon_album_default" />
+        android:layout_below="@+id/rl_artist">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/civ_test"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/icon_album_default" />
+
+    </RelativeLayout>
+
+
 
     <LinearLayout
         android:id="@+id/bottom_time"
@@ -172,6 +188,7 @@
             android:contentDescription="@null"
             android:padding="6dp"
             android:scaleType="centerInside"
+            android:tint="?colorPrimary"
             android:src="@drawable/ic_skip_previous_white_36dp" />
 
         <ImageButton
@@ -184,6 +201,7 @@
             android:contentDescription="@null"
             android:padding="6dp"
             android:scaleType="centerInside"
+            android:tint="?colorPrimary"
             android:src="@drawable/ic_play_white_36dp" />
 
         <ImageButton
@@ -196,6 +214,7 @@
             android:contentDescription="@null"
             android:padding="6dp"
             android:scaleType="centerInside"
+            android:tint="?colorPrimary"
             android:src="@drawable/ic_skip_next_white_36dp" />
 
     </RelativeLayout>

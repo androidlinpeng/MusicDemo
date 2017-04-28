@@ -52,6 +52,10 @@ public class SongsFragment extends BaseFragment {
     private SongsListAdapter mAdapter;
     private LinearLayoutManager linearLayoutManager;
 
+    private static final int ACTION_REFRESH = 1;
+    private static final int ACTION_LOAD_MORE = 2;
+    private int mCurrentAction = ACTION_REFRESH;
+
     public static SongsFragment newInstance(String action) {
         Bundle args = new Bundle();
         switch (action) {
@@ -137,6 +141,7 @@ public class SongsFragment extends BaseFragment {
 
 
     }
+
 
     private static class ItemListDivider extends RecyclerView.ItemDecoration {
 

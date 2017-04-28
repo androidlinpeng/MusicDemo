@@ -10,12 +10,14 @@ public class PlayState {
     public int currentTime;
     public int mediaTime;
     public boolean isPlaying;
+    public boolean onLine;
 
-    public PlayState(String currentPath, int currentTime, int mediaTime, boolean isPlaying) {
+    public PlayState(String currentPath, int currentTime, int mediaTime, boolean isPlaying, boolean onLine) {
         this.currentPath = currentPath;
         this.currentTime = currentTime;
         this.mediaTime = mediaTime;
         this.isPlaying = isPlaying;
+        this.onLine = onLine;
     }
 
     public String getCurrentPath() {
@@ -48,5 +50,13 @@ public class PlayState {
 
     public void setPlaying(boolean playing) {
         isPlaying = playing;
+    }
+
+    public boolean isOnLine() {
+        return onLine;
+    }
+
+    public void setOnLine(boolean onLine) {
+        this.onLine = onLine;
     }
 }

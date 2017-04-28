@@ -96,20 +96,15 @@ public class ArtistFragment extends BaseFragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new ItemListDivider(getActivity()));
         recyclerView.setAdapter(mAdapter);
-        setItemDecoration();
 
+        setItemDecoration();
         updataMedia();
 
     }
 
-    //应用启动时通知系统刷新媒体库,
     private void updataMedia() {
         PermissionManager.init(MyApplication.getInstance());
-        //版本号的判断  4.4为分水岭，发送广播更新媒体库
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//            if (ListenerUtil.isMarshmallow() && !PermissionManager.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//                return;
-//            }
             if (ListenerUtil.isMarshmallow() && !PermissionManager.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 PermissionUtils.requestPermission(getActivity(), PermissionUtils.CODE_READ_EXTERNAL_STORAGE);
             }

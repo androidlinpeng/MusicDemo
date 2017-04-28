@@ -16,6 +16,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,7 @@ import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.dataloader.AlbumSongLoader;
 import msgcopy.com.musicdemo.fragment.BaseFragment;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.utils.ListenerUtil;
 import msgcopy.com.musicdemo.utils.PreferencesUtility;
 import msgcopy.com.musicdemo.view.DividerItemDecoration;
 import rx.android.schedulers.AndroidSchedulers;
@@ -93,14 +97,13 @@ public class AlbumDetailFragment extends BaseFragment {
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST, false));
 
         setupToolbar();
+        loadAlbumArt(albumID);
         subscribeMetaChangedEvent();
 
 
     }
 
     private void subscribeMetaChangedEvent() {
-
-
         AlbumSongLoader.getSongsForAlbum(context, albumID)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -115,6 +118,15 @@ public class AlbumDetailFragment extends BaseFragment {
                         mAdapter.setSongList(musicList);
                     }
                 });
+    }
+
+    public void loadAlbumArt(long albumID) {
+        Glide.with(getActivity())
+                .load(ListenerUtil.getAlbumArtUri(albumID))
+                .asBitmap()
+                .priority(Priority.IMMEDIATE)
+                .error(R.drawable.icon_album_default)
+                .into(albumArt);
     }
 
     private void setupToolbar() {

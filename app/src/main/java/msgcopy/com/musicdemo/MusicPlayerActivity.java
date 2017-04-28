@@ -1,15 +1,11 @@
 package msgcopy.com.musicdemo;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +23,7 @@ import java.util.Formatter;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import msgcopy.com.musicdemo.activity.BaseActivity;
 import msgcopy.com.musicdemo.adapter.PlayerSongListAdapter;
 import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
@@ -35,20 +32,28 @@ import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.ToastUtils;
+import msgcopy.com.musicdemo.view.BlurringView;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class MusicPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_CIRCULATION;
+import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_RANDOM;
+import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_SINGLE;
+import static msgcopy.com.musicdemo.MusicPlayer.getPlayerPattern;
+
+public class MusicPlayerActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "MusicPlayerActivity";
 
     private final static String SP_ARTICLE_BRIGHT_KEY = "article_bright_display";
 
+    private BlurringView blurringView;
+
     private ImageView player_list;
 
-    private ImageView blurview = null;
+    private ImageView bluredView = null;
 
     private TextView music_name = null;
 
@@ -98,7 +103,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private int duration;
 
-    private int pattern ;
+    private int pattern;
 
     private long songID;
 
@@ -156,6 +161,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
             this.musicArtist = infoEntity.artistName;
             this.musicPath = infoEntity.path;
             this.songID = infoEntity.id;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -178,7 +184,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
 
-    public void playerSongList(){
+    public void playerSongList() {
         final PopupWindow popupWindow = new PopupWindow(this);
         View view = getLayoutInflater().inflate(R.layout.view_player_song_list, null);
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
@@ -198,9 +204,9 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
                 MsgCache.get().clear();
                 Intent intent = new Intent();
                 Bundle bundle = new Bundle();
-                bundle.putBoolean("Result",true);
+                bundle.putBoolean("Result", true);
                 intent.putExtras(bundle);
-                setResult(RESULT_OK,intent);
+                setResult(RESULT_OK, intent);
                 finish();
                 stopService(new Intent(MusicPlayerActivity.this, MusicService.class));
             }
@@ -208,7 +214,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
         popupWindow.setContentView(view);
         popupWindow.setWidth(-1);
-        popupWindow.setHeight(getResources().getDisplayMetrics().heightPixels * 2/ 3);
+        popupWindow.setHeight(getResources().getDisplayMetrics().heightPixels * 2 / 3);
         popupWindow.setFocusable(true);
         popupWindow.setOutsideTouchable(true);
         popupWindow.setBackgroundDrawable(getResources().getDrawable(android.R.color.white));
@@ -246,6 +252,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
                                 mediaTime.setText(stringForTime(duration));
                             }
                             updatePausePlay(isPlaying);
+
                             if (!path.equals(musicPath)) {
                                 Song infoEntity = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
                                 musicname = infoEntity.title;
@@ -268,10 +275,10 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private void initMediaController() {
 
-        this.player_list = (ImageView)findViewById(R.id.imag_player_list);
-        this.music_share = (ImageView)findViewById(R.id.music_share);
-        this.panel_back = (ImageView)findViewById(R.id.panel_back);
-        this.player_pattern = (RelativeLayout)findViewById(R.id.player_pattern);
+        this.player_list = (ImageView) findViewById(R.id.imag_player_list);
+        this.music_share = (ImageView) findViewById(R.id.music_share);
+        this.panel_back = (ImageView) findViewById(R.id.panel_back);
+        this.player_pattern = (RelativeLayout) findViewById(R.id.player_pattern);
         this.single = (ImageView) findViewById(R.id.single);
         this.circulation = (ImageView) findViewById(R.id.circulation);
         this.random = (ImageView) findViewById(R.id.random);
@@ -317,15 +324,15 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
         this.panel_back.setOnClickListener(this);
         this.music_share.setOnClickListener(this);
 
-        if (pattern == 10){
+        if (pattern == 10) {
             circulation.setVisibility(View.VISIBLE);
             single.setVisibility(View.GONE);
             random.setVisibility(View.GONE);
-        }else if (pattern==11){
+        } else if (pattern == 11) {
             circulation.setVisibility(View.GONE);
             single.setVisibility(View.VISIBLE);
             random.setVisibility(View.GONE);
-        }else if (pattern==12){
+        } else if (pattern == 12) {
             circulation.setVisibility(View.GONE);
             single.setVisibility(View.GONE);
             random.setVisibility(View.VISIBLE);
@@ -340,18 +347,26 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private void initView() {
         Bitmap bitmap = BitmapUtils.createAlbumArt(musicPath);
-        this.blurview = (ImageView)findViewById(R.id.blur_view);
+        this.bluredView = (ImageView) findViewById(R.id.blur_view);
+        this.blurringView = (BlurringView) findViewById(R.id.blurring_view);
 
         this.civTest = (CircleImageView) findViewById(R.id.civ_test);
-        this.civTest.setBorderColor(Color.GRAY);
+        this.civTest.setBorderColor(R.color.transparent);
         this.civTest.setBorderWidth(8);
-        if (CommonUtil.isBlank(bitmap)){
-            this.blurview.setImageResource(R.drawable.icon_album_dark);
+
+        this.blurringView.setBlurRadius(8);
+        this.blurringView.setDownsampleFactor(8);
+
+        if (CommonUtil.isBlank(bitmap)) {
+            this.bluredView.setImageResource(R.drawable.icon_album_dark);
             this.civTest.setImageResource(R.drawable.icon_album_default);
-        }else {
-//            this.blurview.setImageBitmap(bitmap);
+        } else {
+            this.bluredView.setImageBitmap(bitmap);
             this.civTest.setImageBitmap(bitmap);
         }
+        bluredView.setBackgroundResource(R.color.transparent);
+        blurringView.setBlurredView(bluredView);
+        blurringView.invalidate();
 
     }
 
@@ -388,7 +403,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View v) {
-        pattern = getPlayerPattern();
+        pattern = MusicPlayer.getPlayerPattern();
         switch (v.getId()) {
             case R.id.last:
                 sendService(1);
@@ -410,18 +425,18 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
                 sendService(3);
                 break;
             case R.id.player_pattern:
-                if (pattern == 10){
+                if (pattern == PLAYTER_PATTERN_CIRCULATION) {
                     circulation.setVisibility(View.GONE);
                     single.setVisibility(View.VISIBLE);
-                    setPlayerPattern(11);
-                }else if (pattern==11){
+                    MusicPlayer.setPlayerPattern(PLAYTER_PATTERN_SINGLE);
+                } else if (pattern == PLAYTER_PATTERN_SINGLE) {
                     single.setVisibility(View.GONE);
                     random.setVisibility(View.VISIBLE);
-                    setPlayerPattern(12);
-                }else if (pattern==12){
+                    MusicPlayer.setPlayerPattern(PLAYTER_PATTERN_RANDOM);
+                } else if (pattern == PLAYTER_PATTERN_RANDOM) {
                     random.setVisibility(View.GONE);
                     circulation.setVisibility(View.VISIBLE);
-                    setPlayerPattern(10);
+                    MusicPlayer.setPlayerPattern(PLAYTER_PATTERN_CIRCULATION);
                 }
                 break;
             case R.id.panel_back:
@@ -434,16 +449,6 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
                 playerSongList();
                 break;
         }
-    }
-
-    public static void setPlayerPattern(int pattern) {
-        SharedPreferences sp = MyApplication.getInstance().getSharedPreferences(MusicService.UPDATE_MUSIC_PLAYER_PATTERN, Activity.MODE_PRIVATE);
-        sp.edit().putInt("pattern", pattern).apply();
-    }
-
-    public static int getPlayerPattern() {
-        SharedPreferences sp = MyApplication.getInstance().getSharedPreferences(MusicService.UPDATE_MUSIC_PLAYER_PATTERN, Activity.MODE_PRIVATE);
-        return sp.getInt("pattern", 10);
     }
 
     private void sendBroadcast(long position) {
@@ -482,9 +487,11 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
             }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 float seekProgress = seekBar.getProgress();
@@ -505,6 +512,7 @@ public class MusicPlayerActivity extends AppCompatActivity implements View.OnCli
         popupWindow.setBackgroundDrawable(getResources().getDrawable(android.R.color.white));
         popupWindow.showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
     }
+
     private void setScreenBrightness(float bright) {
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.screenBrightness = bright;

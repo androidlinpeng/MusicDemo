@@ -8,6 +8,13 @@ public class Constants {
 
     public static final String MUSIC_LIST = "music_list";
     public static final String MUSIC_INFO = "current_music_info";
+    public static final String ONLINE_MUSIC_PLAYER_LIST = "online_music_player_list";
+    public static final String ONLINE_MUSIC_INFO = "online_current_music_info";
+    public static final String ONLINE_STATUS = "online_status";
+
+    public static final int PLAYTER_PATTERN_CIRCULATION = 10;
+    public static final int PLAYTER_PATTERN_SINGLE = 11;
+    public static final int PLAYTER_PATTERN_RANDOM = 12;
 
     public static final String NAVIGATE_LIBRARY = "navigate_library";
     public static final String NAVIGATE_PLAYLIST = "navigate_playlist";

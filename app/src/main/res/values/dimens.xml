@@ -30,5 +30,9 @@
 
     <dimen name="spacing_card">16dp</dimen>
 
+    <!--500px BlurringView -->
+    <integer name="default_blur_radius">15</integer>
+    <integer name="default_downsample_factor">8</integer>
+
 
 </resources>

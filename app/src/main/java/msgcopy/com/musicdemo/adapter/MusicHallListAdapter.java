@@ -1,7 +1,5 @@
 package msgcopy.com.musicdemo.adapter;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -20,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import msgcopy.com.musicdemo.HttpUser;
-import msgcopy.com.musicdemo.utils.LogUtil;
+import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.NewSong;
 import msgcopy.com.musicdemo.modul.Songurl;
-import msgcopy.com.musicdemo.service.MusicService;
+import msgcopy.com.musicdemo.utils.LogUtil;
 import rx.Subscriber;
 
 /**
@@ -180,7 +178,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    getHttp(arraylist.get(getAdapterPosition() - 1).getSong_id());
+                    getHttp(arraylist.get(getAdapterPosition() - 1).getSong_id(),getAdapterPosition() - 1);
                 }
             }, 100);
 
@@ -205,7 +203,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
-    public void getHttp(final String songid) {
+    public void getHttp(final String songid, final int position) {
         LogUtil.i(TAG,"getHttp"+Long.parseLong(songid));
         //git请求
         subscriberGet = new Subscriber<Songurl>() {
@@ -221,17 +219,10 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             @Override
             public void onNext(Songurl songurl) {
-                LogUtil.i(TAG,"Show_link"+songurl.getSongurl().getUrl().get(0).getShow_link());
-                Intent intentService = new Intent(mContext, MusicService.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("currentMusicPath", songurl.getSongurl().getUrl().get(0).getShow_link());
-                bundle.putString("songID", songid);
-                bundle.putInt("status", 0);
-                intentService.putExtra("onlinebundle", bundle);
-                mContext.startService(intentService);
 
+                MusicPlayer.onLinePlayAll(mContext,songurl,arraylist, position);
             }
         };
-        new HttpUser().getSongPath(subscriberGet,Long.parseLong(songid));
+        new HttpUser().getSongPath(subscriberGet,songid);
     }
 }

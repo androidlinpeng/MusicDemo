@@ -57,11 +57,12 @@ public class MusicHallListFragment extends BaseFragment {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.addItemDecoration(new ItemListDivider(getActivity()));
         recyclerView.setAdapter(mAdapter);
-        getHttp();
+
+        getHttp(type,""+20);
 
     }
 
-    public void getHttp() {
+    public void getHttp(String type,String size) {
         //git请求
         subscriberGet = new Subscriber<NewSong>() {
             @Override
@@ -82,7 +83,7 @@ public class MusicHallListFragment extends BaseFragment {
                 mAdapter.setSongList(song_list);
             }
         };
-        new HttpUser().getGetData(subscriberGet,type);
+        new HttpUser().getGetData(subscriberGet,type,size);
     }
 
 

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#30ac7d</color>
+    <color name="colorPrimaryDark">#34BE8A</color>
     <color name="colorAccent">#FF4081</color>
     <color name="white">#ffffff</color>
-    <color name="whiteShallow">#f2f1f1</color>
+    <color name="whiteShallow">#e6e5e5</color>
     <color name="transparent">#00ffffff</color>
+    <color name="transparentHalf">#0cffffff</color>
     <color name="startcolorPrimary">#5d6fd2</color>
 
     <color name="colorPrimaryTextWhite">#ffffffff</color>
@@ -31,5 +32,8 @@
 
     <color name="sub_title_colorDark">#202020</color>
     <color name="sub_content_colorDark">#878686</color>
+
+    <!--500px BlurringView -->
+    <color name="default_overlay_color">#AAFFFFFF</color>
 
 </resources>

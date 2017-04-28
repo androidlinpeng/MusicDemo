@@ -44,18 +44,18 @@ public class HttpUser {
     private Retrofit retrofit;
     private UserService userService;
 
-    public void getSongPath(Subscriber<Songurl> subscriber, long songid) {
+    public void getSongPath(Subscriber<Songurl> subscriber, String songid) {
         userService = getRetrofit().create(UserService.class);
-        userService.getSongPath()
+        userService.getSongPath(songid)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(subscriber);
     }
 
-    public void getGetData(Subscriber<NewSong> subscriber,String type) {
+    public void getGetData(Subscriber<NewSong> subscriber,String type,String size) {
         userService = getRetrofit().create(UserService.class);
-        userService.getGetData(type)
+        userService.getGetData(type,size)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -115,14 +115,17 @@ public class HttpUser {
 
             builder.addHeader("Accept-Encoding","gzip");
             builder.addHeader("User-Agent","android_5.9.9.4;baiduyinyue");
-            builder.addHeader("cuid","38D9C3D58F2B4550E00B41F2819D36C4");
-            builder.addHeader("deviceid",uuid);
+//            builder.addHeader("cuid","38D9C3D58F2B4550E00B41F2819D36C4");
+//            builder.addHeader("deviceid",uuid);
+            builder.addHeader("cuid","BC8054D71DA30123B485889EAB3D3F7A");
+            builder.addHeader("deviceid","869161027041482");
             builder.addHeader("Connection","Keep-Alive");
             builder.addHeader("Host","baifen.music.baidu.com");
             return chain.proceed(builder.build());
 
         }
     }
+
 
     public class ReceivedCookiesInterceptor implements Interceptor {
 

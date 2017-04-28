@@ -11,8 +11,8 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +29,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import msgcopy.com.musicdemo.activity.BaseActivity;
 import msgcopy.com.musicdemo.fragment.MainFragment;
 import msgcopy.com.musicdemo.fragment.MusicHallFragment;
 import msgcopy.com.musicdemo.fragment.SearchFragment;
@@ -45,7 +46,7 @@ import rx.schedulers.Schedulers;
 
 import static msgcopy.com.musicdemo.R.id.toolbar;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private FragmentManager mFragmentManager;
     public static Fragment mCurrentFragment;
@@ -72,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private int currentTime;
 
     public final static int REQUEST_REG = 1;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,10 +119,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK){
-            switch (requestCode){
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
                 case REQUEST_REG:
-                    if (data.getExtras().getBoolean("Result")){
+                    if (data.getExtras().getBoolean("Result")) {
                         currentsong = null;
                         initView();
                     }
@@ -165,8 +165,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (view.getId()) {
             case R.id.player_bottom:
                 if (!CommonUtil.isBlank(currentsong)) {
-                    startActivityForResult(new Intent(this, MusicPlayerActivity.class),REQUEST_REG);
-                    overridePendingTransition(R.anim.leftin,R.anim.leftout);
+                    startActivityForResult(new Intent(this, MusicPlayerActivity.class), REQUEST_REG);
+                    overridePendingTransition(R.anim.leftin, R.anim.leftout);
                 }
                 break;
             case R.id.imag_player_bottom:
@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void initDefaultFragment() {
         mToolbar.setTitle(R.string.str_home);
         mFragmentManager = getSupportFragmentManager();
-        mCurrentFragment = ViewUtils.createFragment(MainFragment.class,true);
+        mCurrentFragment = ViewUtils.createFragment(MainFragment.class, true);
         mFragmentManager.beginTransaction().add(R.id.frame_content, mCurrentFragment).commit();
 
         mNavigationView.getMenu().getItem(0).setChecked(true);
@@ -220,9 +220,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+
+                break;
+            case R.id.action_search:
+                mToolbar.setTitle(R.string.str_search);
+                backStackFragment(SearchFragment.class);
+                mToolbar.setVisibility(View.GONE);
+                break;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -253,19 +261,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             finish();
         }
         item.setChecked(true);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+//        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 
     public void backStackFragment(Class<?> mclass) {
-        Fragment fragment = ViewUtils.createFragment(mclass,false);
+        Fragment fragment = ViewUtils.createFragment(mclass, false);
         mFragmentManager.beginTransaction().hide(mCurrentFragment).add(R.id.frame_content, fragment).addToBackStack(null).commit();
         mCurrentFragment = fragment;
     }
 
     public Fragment switchFragment(Class<?> mclass) {
-        Fragment fragment = ViewUtils.createFragment(mclass,true);
+        Fragment fragment = ViewUtils.createFragment(mclass, true);
         if (fragment.isAdded()) {
             mFragmentManager.beginTransaction().hide(mCurrentFragment).show(fragment).commitAllowingStateLoss();
         } else {
@@ -292,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         text_song_title.setText("" + song.title);
                         text_song_artist.setText("" + song.artistName);
                         currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
+
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -306,7 +315,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .toObservable(PlayState.class)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-//                .distinctUntilChanged()
                 .subscribe(new Action1<PlayState>() {
                     @Override
                     public void call(PlayState playState) {
@@ -380,6 +388,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+            if (this.mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                this.mDrawerLayout.closeDrawer(Gravity.START);
+            } else {
+                this.mDrawerLayout.openDrawer(Gravity.LEFT);
+            }
         }
         return super.onKeyDown(keyCode, event);
     }
