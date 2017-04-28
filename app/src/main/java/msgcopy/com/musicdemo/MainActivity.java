@@ -1,5 +1,9 @@
 package msgcopy.com.musicdemo;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +24,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -74,6 +79,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     public final static int REQUEST_REG = 1;
 
+    private RemoteViews contentView;
+    private Notification notification;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,6 +121,38 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initDefaultFragment();
         subscribeChangedSong();
         subscribePlayState();
+
+        initNotificationBar();
+
+    }
+
+    private final static int MESSAGE_CENTER_NOTIFY_ID = 2;
+
+    public void initNotificationBar() {
+        notification = new Notification();
+        //初始化通知
+        notification.icon = R.drawable.icon_album_default;
+        contentView = new RemoteViews(getPackageName(), R.layout.notification_control);
+        notification.contentView = contentView;
+
+        Intent intentPlay = new Intent("play");//新建意图，并设置action标记为"play"，用于接收广播时过滤意图信息
+        PendingIntent pIntentPlay = PendingIntent.getBroadcast(this, 0,intentPlay, 0);
+        contentView.setOnClickPendingIntent(R.id.bt_notic_play, pIntentPlay);//为play控件注册事件
+        Intent intentPause = new Intent("pause");
+        PendingIntent pIntentPause = PendingIntent.getBroadcast(this, 0, intentPause, 0);
+//        contentView.setOnClickPendingIntent(R.id.bt_notic_pause, pIntentPause);
+        Intent intentNext = new Intent("next");
+        PendingIntent pIntentNext = PendingIntent.getBroadcast(this, 0, intentNext, 0);
+        contentView.setOnClickPendingIntent(R.id.bt_notic_next, pIntentNext);
+        Intent intentLast = new Intent("last");
+        PendingIntent pIntentLast = PendingIntent.getBroadcast(this, 0,intentLast, 0);
+        contentView.setOnClickPendingIntent(R.id.bt_notic_last, pIntentLast);
+        Intent intentCancel = new Intent("cancel");
+        PendingIntent pIntentCancel = PendingIntent.getBroadcast(this, 0,intentCancel, 0);
+//        contentView.setOnClickPendingIntent(R.id.bt_notic_cancel, pIntentCancel);
+        notification.flags = notification.FLAG_NO_CLEAR;//设置通知点击或滑动时不被清除
+        NotificationManager notificationManager = (NotificationManager) MyApplication.getInstance().getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(MESSAGE_CENTER_NOTIFY_ID, notification);//开启通知
 
     }
 

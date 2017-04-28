@@ -188,7 +188,6 @@
             android:contentDescription="@null"
             android:padding="6dp"
             android:scaleType="centerInside"
-            android:tint="?colorPrimary"
             android:src="@drawable/ic_skip_previous_white_36dp" />
 
         <ImageButton
@@ -201,7 +200,6 @@
             android:contentDescription="@null"
             android:padding="6dp"
             android:scaleType="centerInside"
-            android:tint="?colorPrimary"
             android:src="@drawable/ic_play_white_36dp" />
 
         <ImageButton
@@ -214,7 +212,6 @@
             android:contentDescription="@null"
             android:padding="6dp"
             android:scaleType="centerInside"
-            android:tint="?colorPrimary"
             android:src="@drawable/ic_skip_next_white_36dp" />
 
     </RelativeLayout>
