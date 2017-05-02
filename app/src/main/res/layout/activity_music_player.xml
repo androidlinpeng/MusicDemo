@@ -18,7 +18,7 @@
         android:id="@+id/blurring_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:overlayColor="#20000000"/>
+        app:overlayColor="#20000000" />
 
 
     <RelativeLayout
@@ -34,8 +34,8 @@
             android:id="@+id/panel_back"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="10dp"
             android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
             android:background="@android:color/transparent"
             android:contentDescription="@null"
             android:padding="6dp"
@@ -49,23 +49,23 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
-            android:padding="6dp"
             android:background="@android:color/transparent"
-            android:src="@drawable/abc_ic_menu_moreoverflow_mtrl_alpha"/>
+            android:padding="6dp"
+            android:src="@drawable/abc_ic_menu_moreoverflow_mtrl_alpha" />
 
         <TextView
             android:id="@+id/music_name"
             android:layout_width="match_parent"
             android:layout_height="35dp"
             android:layout_alignParentTop="true"
-            android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="60dp"
             android:layout_marginRight="60dp"
             android:gravity="center"
             android:singleLine="true"
-            android:textColor="#ffffff"
             android:text="222222"
+            android:textColor="#ffffff"
             android:textSize="18sp" />
 
     </RelativeLayout>
@@ -76,8 +76,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/rl_musicname"
-        android:layout_marginTop="8dp"
-        android:layout_centerHorizontal="true">
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="2dp">
 
         <View
             android:id="@+id/artist_Left"
@@ -117,31 +117,19 @@
         android:layout_above="@+id/bottom_time"
         android:layout_below="@+id/rl_artist">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/civ_test"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
-            android:layout_centerInParent="true"
-            android:layout_marginBottom="20dp"
-            android:visibility="gone"
-            android:src="@drawable/icon_album_default" />
-
-        <me.wcy.lrcview.LrcView
-            android:id="@+id/lrc_view_full"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
-            android:layout_centerInParent="true"
-            lrc:lrcAnimationDuration="100"
-            lrc:lrcCurrentTextColor="@color/colorPrimary"
-            lrc:lrcDividerHeight="24dp"
-            lrc:lrcNormalTextColor="@color/whiteShallow"
-            lrc:lrcTextSize="@dimen/text_size_common" />
-
-        <!--<android.support.v4.view.ViewPager-->
-            <!--android:id="@+id/vp_play_page"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:overScrollMode="never" />-->
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:layout_above="@+id/circle_vpi"/>
+        <com.viewpagerindicator.CirclePageIndicator
+            android:id="@+id/circle_vpi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:padding="12dp" />
 
     </RelativeLayout>
 
@@ -168,9 +156,9 @@
 
         <SeekBar
             android:id="@+id/mediacontroller_progress"
-            android:layout_gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:maxHeight="3dp"
             android:minHeight="3dp"
@@ -236,11 +224,11 @@
             android:layout_width="80dp"
             android:layout_height="40dp"
             android:layout_centerVertical="true"
-            android:padding="5dp"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:onClick="onClick"
-            android:focusable="true"
-            android:clickable="true">
+            android:padding="5dp">
 
             <ImageView
                 android:id="@+id/circulation"
@@ -254,17 +242,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:background="@drawable/ic_one_shot"
-                android:visibility="gone"
-                android:gravity="center" />
+                android:gravity="center"
+                android:visibility="gone" />
 
             <ImageView
                 android:id="@+id/random"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:padding="1dp"
                 android:background="@drawable/ic_list_shuffle"
                 android:gravity="center"
-                android:visibility="gone"/>
+                android:padding="1dp"
+                android:visibility="gone" />
 
         </RelativeLayout>
 
@@ -272,14 +260,14 @@
             android:id="@+id/player_list"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:padding="5dp"
+            android:layout_marginLeft="20dp"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:onClick="onClick"
-            android:focusable="true"
-            android:clickable="true">
+            android:padding="5dp">
 
             <ImageView
                 android:id="@+id/imag_player_list"

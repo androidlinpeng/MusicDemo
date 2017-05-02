@@ -7,6 +7,7 @@
     <color name="whiteShallow">#e6e5e5</color>
     <color name="transparent">#00ffffff</color>
     <color name="transparentHalf">#72ffffff</color>
+    <color name="transparentDark">#41b7b5b5</color>
     <color name="startcolorPrimary">#5d6fd2</color>
 
     <color name="colorPrimaryTextWhite">#ffffffff</color>

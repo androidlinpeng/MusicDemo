@@ -21,6 +21,7 @@ import msgcopy.com.musicdemo.Constants;
 import msgcopy.com.musicdemo.HttpUser;
 import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.MusicPlayer;
+import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.modul.Songurl;
@@ -158,8 +159,10 @@ public class PlayerSongListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 @Override
                 public void run() {
                     if (arraylist.get(getAdapterPosition()).equals(Constants.LOCAL_MUSIC)) {
+                        MyApplication.getInstance().getMusicService().updateMusicList(arraylist);
                         MusicPlayer.playAll(mContext, arraylist, getAdapterPosition());
                     }else {
+                        MyApplication.getInstance().getMusicService().updateMusicList(arraylist);
                         getHttp(arraylist.get(getAdapterPosition()).id+"",getAdapterPosition());
                     }
                 }
@@ -184,7 +187,7 @@ public class PlayerSongListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
             @Override
             public void onNext(Songurl songurl) {
-                MusicPlayer.PlaySong(mContext,songurl);
+                MusicPlayer.PlaySong(mContext,songurl,position);
             }
         };
         new HttpUser().getSongPath(subscriberGet,songid);

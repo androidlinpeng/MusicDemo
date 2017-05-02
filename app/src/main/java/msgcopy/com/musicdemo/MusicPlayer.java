@@ -22,62 +22,44 @@ import static msgcopy.com.musicdemo.Constants.MUSIC_LIST;
 
 public class MusicPlayer {
 
-    public static void PlaySong(Context mContext, Songurl songurl){
-        Intent intentService = new Intent(mContext, MusicService.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("currentMusicPath", songurl.getBitrate().getFile_link());
-        bundle.putString("songID", songurl.getSonginfo().getSong_id());
-        bundle.putInt("status", 0);
-        intentService.putExtra("bundle", bundle);
-        mContext.startService(intentService);
+    public static void PlaySong(Context mContext, Songurl songurl,int position){
 
         Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1,songurl.getBitrate().getFile_link());
         MsgCache.get().put(Constants.MUSIC_INFO,song);
+
+        MyApplication.getInstance().getMusicService().play(song,position);
 
     }
 
     public static void playAll(Context context, List<Song> arraylist, int getAdapterPosition){
         Song song = arraylist.get(getAdapterPosition);
-        Intent intentService = new Intent(context, MusicService.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("currentMusicPath", song.path);
-        bundle.putLong("songID", song.id);
-        bundle.putInt("status", 0);
-        intentService.putExtra("bundle", bundle);
-        context.startService(intentService);
         MsgCache.get().put(Constants.MUSIC_INFO, song);
         MsgCache.get().put(MUSIC_LIST, arraylist);
+        MyApplication.getInstance().getMusicService().play(song,getAdapterPosition);
     }
 
-    public static void onLinePlayAll(Context mContext, Songurl songurl,List<NewSong.SongListBean> arraylist){
-        Intent intentService = new Intent(mContext, MusicService.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("currentMusicPath", songurl.getBitrate().getFile_link());
-        bundle.putString("songID", songurl.getSonginfo().getSong_id());
-        bundle.putInt("status", 0);
-        intentService.putExtra("bundle", bundle);
-        mContext.startService(intentService);
+    public static void onLinePlayAll(Context mContext, Songurl songurl,List<NewSong.SongListBean> arraylist,int position){
 
         Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1,songurl.getBitrate().getFile_link());
-
         MsgCache.get().put(Constants.MUSIC_INFO,song);
 
         List<Song> songs = new ArrayList<Song>();
         for (int i = 0; i < arraylist.size(); i++) {
-            Song song1 = new Song(Long.parseLong(arraylist.get(i).getSong_id()), -1, -1, arraylist.get(i).getTitle(), arraylist.get(i).getAuthor(), arraylist.get(i).getAlbum_title(), -1, -1);
+            Song song1 = new Song(Constants.ONLINE_MUSIC,Long.parseLong(arraylist.get(i).getSong_id()), -1, -1, arraylist.get(i).getTitle(), arraylist.get(i).getAuthor(), arraylist.get(i).getAlbum_title(), -1, -1);
             songs.add(song1);
         }
         MsgCache.get().put(Constants.MUSIC_LIST, songs);
 
-//        MsgCache.get().put(Constants.ONLINE_MUSIC_INFO, songurl);
-//        MsgCache.get().put(Constants.ONLINE_MUSIC_PLAYER_LIST, arraylist);
+        MyApplication.getInstance().getMusicService().play(song,position);
+        MyApplication.getInstance().getMusicService().updateMusicList(songs);
+
     }
 
     public static void onLinePlay(Context mContext, Songurl songurl){
         Intent intentService = new Intent(mContext, MusicService.class);
         Bundle bundle = new Bundle();
         bundle.putString("currentMusicPath", songurl.getBitrate().getFile_link());
-        bundle.putString("songID", songurl.getSonginfo().getSong_id());
+        bundle.putLong("songID", Long.parseLong(songurl.getSonginfo().getSong_id()));
         bundle.putInt("status", 0);
         intentService.putExtra("bundle", bundle);
         mContext.startService(intentService);

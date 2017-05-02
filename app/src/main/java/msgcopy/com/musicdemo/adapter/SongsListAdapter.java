@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import msgcopy.com.musicdemo.MusicPlayer;
+import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
@@ -168,6 +169,7 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    MyApplication.getInstance().getMusicService().updateMusicList(arraylist);
                     MusicPlayer.playAll(mContext,arraylist, getAdapterPosition() - 1);
                 }
             }, 100);

@@ -220,7 +220,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             @Override
             public void onNext(Songurl songurl) {
-                MusicPlayer.onLinePlayAll(mContext,songurl,arraylist);
+                MusicPlayer.onLinePlayAll(mContext,songurl,arraylist,position);
             }
         };
         new HttpUser().getSongPath(subscriberGet,songid);

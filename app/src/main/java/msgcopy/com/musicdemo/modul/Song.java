@@ -18,7 +18,7 @@ public class Song implements Serializable{
     public final String title;
     public final int trackNumber;
     public float playCountScore;
-    public final String path;
+    public String path;
 
     public Song() {
         this.id = -1;
@@ -67,6 +67,19 @@ public class Song implements Serializable{
         this.trackNumber = trackNumber;
         this.duration = duration;
         this.path = path;
+    }
+
+    public Song(String type, long id, long albumId, long artistId, String title, String artistName, String albumName, int duration, int trackNumber) {
+        this.type = type;
+        this.id = id;
+        this.albumId = albumId;
+        this.artistId = artistId;
+        this.title = title;
+        this.artistName = artistName;
+        this.albumName = albumName;
+        this.trackNumber = trackNumber;
+        this.duration = duration;
+        this.path = "";
     }
 
     public void setPlayCountScore(float playCountScore) {

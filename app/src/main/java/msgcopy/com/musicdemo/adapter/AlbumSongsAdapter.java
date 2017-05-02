@@ -15,6 +15,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.List;
 
 import msgcopy.com.musicdemo.MusicPlayer;
+import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
@@ -55,7 +56,6 @@ public class AlbumSongsAdapter extends RecyclerView.Adapter<AlbumSongsAdapter.It
                 .centerCrop()
                 .into(itemHolder.albumArt);
 
-//        setOnPopupMenuListener(itemHolder, i);
     }
 
 
@@ -104,19 +104,9 @@ public class AlbumSongsAdapter extends RecyclerView.Adapter<AlbumSongsAdapter.It
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-
+                    MyApplication.getInstance().getMusicService().updateMusicList(arraylist);
                     MusicPlayer.playAll(mContext,arraylist, getAdapterPosition());
 
-//                    MsgCache.get().put(Constants.MUSIC_LIST, arraylist);
-//                    Song song = arraylist.get(getAdapterPosition());
-//                    Intent intentService = new Intent(mContext, MusicService.class);
-//                    Bundle bundle = new Bundle();
-//                    bundle.putString("currentMusicPath", song.path);
-//                    bundle.putLong("songID", song.id);
-//                    bundle.putInt("status", 0);
-//                    intentService.putExtra("bundle", bundle);
-//                    mContext.startService(intentService);
-//                    MsgCache.get().put(Constants.MUSIC_INFO, song);
                 }
             }, 100);
 

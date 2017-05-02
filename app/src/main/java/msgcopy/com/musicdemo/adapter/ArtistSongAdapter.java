@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import msgcopy.com.musicdemo.MusicPlayer;
+import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.dataloader.ArtistAlbumLoader;
 import msgcopy.com.musicdemo.modul.Album;
@@ -202,19 +203,9 @@ public class ArtistSongAdapter extends RecyclerView.Adapter<ArtistSongAdapter.It
                 @Override
                 public void run() {
 
-                    MusicPlayer.playAll(mContext,arraylist, getAdapterPosition());
 
-//                    Song song = arraylist.get(getAdapterPosition());
-//                    Intent intentService = new Intent(mContext, MusicService.class);
-//                    Bundle bundle = new Bundle();
-//                    bundle.putString("currentMusicPath", song.path);
-//                    bundle.putLong("songID", song.id);
-//                    bundle.putInt("status", 0);
-//                    intentService.putExtra("bundle", bundle);
-//                    mContext.startService(intentService);
-//                    MsgCache.get().put(Constants.MUSIC_LIST, arraylist);
-//                    MsgCache.get().put(Constants.MUSIC_INFO, song);
-//                    MusicPlayer.playAll(mContext, songIDs, getAdapterPosition() - 1, artistID, ListenerUtil.IdType.Artist, false);
+                    MyApplication.getInstance().getMusicService().updateMusicList(arraylist);
+                    MusicPlayer.playAll(mContext,arraylist, getAdapterPosition());
                 }
             }, 100);
         }

@@ -4,12 +4,15 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -34,6 +37,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -89,6 +93,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private MainBroadcastReceiver mainReceiver;
 
+    private ServiceConnection myServiceConnection;
+
     private class MainBroadcastReceiver extends BroadcastReceiver {
 
         @Override
@@ -98,7 +104,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if (null != action) {
                     if (action.equals(Constants.NOTIC_PLAY)) {
                         if (!CommonUtil.isBlank(currentsong)) {
-                            sendService(2);
+                            MyApplication.getInstance().getMusicService().play();
                             if (!CommonUtil.isBlank(currentsong.path)) {
                                 if (isPlaying) {
                                     isPlaying = false;
@@ -111,17 +117,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     } else if (action.equals(Constants.NOTIC_NEXT)) {
                         if (!CommonUtil.isBlank(currentsong)) {
                             imag_player_bottom.setImageResource(R.drawable.ic_play_white_36dp);
-                            sendService(3);
+                            MyApplication.getInstance().getMusicService().next();
                         }
                     } else if (action.equals(Constants.NOTIC_LAST)) {
                         if (!CommonUtil.isBlank(currentsong)) {
                             imag_player_bottom.setImageResource(R.drawable.ic_play_white_36dp);
-                            sendService(1);
+                            MyApplication.getInstance().getMusicService().last();
                         }
                     } else if (action.equals(Constants.NOTIC_CANCEL)) {
 
                     }
-//                    initNotificationBar(currentsong);
                 }
             }
         }
@@ -178,6 +183,37 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         filter.addAction(Constants.NOTIC_CANCEL);
         registerReceiver(mainReceiver, filter);
 
+        binPlayService();
+
+    }
+
+    private void binPlayService() {
+        if (MyApplication.getInstance().getMusicService() == null) {
+            Intent intent = new Intent();
+            intent.setClass(this,MusicService.class);
+            myServiceConnection = new PlayServiceConnection();
+            bindService(intent,myServiceConnection,Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private class PlayServiceConnection implements ServiceConnection {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            MusicService musicService =  ((MusicService.MyBinder) iBinder).getService();
+            MyApplication.getInstance().setMusicService(musicService);
+            try {
+                List<Song> mlist = (List<Song>) MsgCache.get().getAsObject(Constants.MUSIC_LIST);
+                musicService.updateMusicList(mlist);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
     }
 
     private final static int MESSAGE_CENTER_NOTIFY_ID = 2;
@@ -287,7 +323,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 break;
             case R.id.imag_player_bottom:
                 if (!CommonUtil.isBlank(currentsong)) {
-                    sendService(2);
+                    MyApplication.getInstance().getMusicService().play();
                     if (!CommonUtil.isBlank(currentsong.path)) {
                         if (isPlaying) {
                             isPlaying = false;
@@ -301,7 +337,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             case R.id.imag_player_next:
                 if (!CommonUtil.isBlank(currentsong)) {
                     this.imag_player_bottom.setImageResource(R.drawable.ic_play_white_36dp);
-                    sendService(3);
+                    MyApplication.getInstance().getMusicService().next();
                 }
                 break;
         }
@@ -408,20 +444,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 .subscribe(new Action1<Song>() {
                     @Override
                     public void call(Song song) {
-                        if (song.type.equals(Constants.LOCAL_MUSIC)){
-                            Glide.with(getApplication()).load(ListenerUtil.getAlbumArtUri(song.albumId).toString())
-                                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                                    .placeholder(R.drawable.icon_album_default)
-                                    .centerCrop()
-                                    .into(imag_albumArt);
-                        }else {
+                        if (song.type.equals(Constants.LOCAL_MUSIC)) {
                             Glide.with(getApplication()).load(ListenerUtil.getAlbumArtUri(song.albumId).toString())
                                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                                     .placeholder(R.drawable.icon_album_default)
                                     .centerCrop()
                                     .into(imag_albumArt);
                         }
-
                         text_song_title.setText("" + song.title);
                         text_song_artist.setText("" + song.artistName);
                         currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
@@ -471,13 +500,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void sendService(int status) {
-        Intent intentService = new Intent(MainActivity.this, MusicService.class);
+        Intent intentService = new Intent();
         Bundle bundle = new Bundle();
         bundle.putString("currentMusicPath", currentsong.path);
         bundle.putInt("status", status);
         bundle.putLong("songID", currentsong.id);
         intentService.putExtra("bundle", bundle);
-        startService(intentService);
+//        startService(intentService);
+        MyApplication.getInstance().getMusicService().pause(intentService);
     }
 
     private void updatePausePlay(boolean isPlaying) {

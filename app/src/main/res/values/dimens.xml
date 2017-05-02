@@ -30,6 +30,7 @@
 
     <dimen name="spacing_card">16dp</dimen>
     <dimen name="text_size_common">18dp</dimen>
+    <dimen name="text_size_lrc">16dp</dimen>
 
 
     <!--500px BlurringView -->

@@ -20,6 +20,7 @@ import android.widget.RemoteViews;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 import msgcopy.com.musicdemo.Constants;
 import msgcopy.com.musicdemo.HttpUser;
@@ -29,7 +30,6 @@ import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.RxBus;
 import msgcopy.com.musicdemo.activity.LockScreenActivity;
-import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.modul.Songurl;
@@ -64,9 +64,6 @@ public class MusicService extends Service {
 
     public static final String MUSIC_INFO = "current_music_info";
 
-
-    private MyBinder mBinder = new MyBinder();
-
     private MyReceiver myReceiver;  //自定义广播接收器
 
     private MediaPlayer mediaPlayer;
@@ -87,6 +84,118 @@ public class MusicService extends Service {
 
     private List<Song> mlist = null;
 
+    private int mPlayPosition;
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        LogUtil.i(TAG, "onBind:");
+        return new MyBinder();
+    }
+
+    public class MyBinder extends Binder {
+
+        public MusicService getService() {
+            return MusicService.this;
+        }
+    }
+
+    public void last() {
+        LogUtil.i(TAG, "last:");
+        if (mlist.isEmpty()) {
+            return;
+        }
+        Song song = null;
+        switch (MusicPlayer.getPlayerPattern()) {
+            case Constants.PLAYTER_PATTERN_RANDOM://随机
+                mPlayPosition = new Random().nextInt(mlist.size());
+                song = mlist.get(mPlayPosition);
+                play(song, mPlayPosition);
+                break;
+            case Constants.PLAYTER_PATTERN_SINGLE://单曲
+                song = mlist.get(mPlayPosition);
+                play(song, mPlayPosition);
+                break;
+            case Constants.PLAYTER_PATTERN_CIRCULATION://循环
+                mPlayPosition = mPlayPosition - 1 >= 0 ? mPlayPosition - 1 : mlist.size() - 1;
+                LogUtil.i(TAG, "last:" + mPlayPosition);
+                song = mlist.get(mPlayPosition);
+                play(song, mPlayPosition);
+                break;
+        }
+
+    }
+
+    public void pause(Intent intent) {
+        LogUtil.i(TAG, "pause:");
+
+    }
+
+    public void play(Song song, int position) {
+        try {
+            LogUtil.i(TAG, "play:");
+            mPlayPosition = position;
+            if (song.type.equals(Constants.LOCAL_MUSIC)) {
+                RxBus.getInstance().post(song);
+                currentMusicPath = song.path;
+                mediaPlayer.reset();// 把各项参数恢复到初始状态
+                mediaPlayer.setDataSource(song.path);
+                mediaPlayer.prepare(); // 进行缓冲
+                mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
+                mediaTime = mediaPlayer.getDuration();
+                handler.sendEmptyMessage(1);
+                MsgCache.get().put(MUSIC_INFO, song);
+                initNotificationBar();
+            } else {
+                getHttp(song.id, song);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void play() {
+        if (mediaPlayer.isPlaying() && mediaPlayer != null) {
+            mediaPlayer.pause();
+            isPlaying = false;
+        } else {
+            mediaPlayer.start();
+            isPlaying = true;
+        }
+        handler.sendEmptyMessage(1);
+        initNotificationBar();
+    }
+
+    public void next() {
+        LogUtil.i(TAG, "next:");
+        if (mlist.isEmpty()) {
+            return;
+        }
+        Song song = null;
+        switch (MusicPlayer.getPlayerPattern()) {
+            case Constants.PLAYTER_PATTERN_RANDOM://随机
+                mPlayPosition = new Random().nextInt(mlist.size());
+                song = mlist.get(mPlayPosition);
+                play(song, mPlayPosition);
+                break;
+            case Constants.PLAYTER_PATTERN_SINGLE://单曲
+                song = mlist.get(mPlayPosition);
+                play(song, mPlayPosition);
+                break;
+            case Constants.PLAYTER_PATTERN_CIRCULATION://循环
+                mPlayPosition = (mPlayPosition + 1) > mlist.size() - 1 ? 0 : (mPlayPosition + 1);
+                song = mlist.get(mPlayPosition);
+                play(song, mPlayPosition);
+                break;
+        }
+
+    }
+
+    public void updateMusicList(List<Song> list) {
+        LogUtil.i(TAG, "updateMusicList:");
+        mlist = list;
+
+    }
+
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -96,32 +205,17 @@ public class MusicService extends Service {
                     if (mediaPlayer != null) {
                         try {
                             currentTime = mediaPlayer.getCurrentPosition(); // 获取当前音乐播放的位置
-//                        Intent intent = new Intent();
-//                        intent.setAction(MUSIC_PLAYER_STATE);
-//                        Bundle bundle = new Bundle();
-//                        bundle.putString("currentMusicPath", currentMusicPath);
-//                        bundle.putInt("currentTime", currentTime);
-//                        bundle.putInt("mediaTime", mediaTime);
-//                        bundle.putBoolean("isPlaying", isPlaying);
-//                        intent.putExtras(bundle);
-//                        sendBroadcast(intent);
                             handler.sendEmptyMessageDelayed(1, 100);
                             PlayState playState = new PlayState(currentMusicPath, currentTime, mediaTime, isPlaying, false);
                             RxBus.getInstance().post(playState);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
                     }
                     break;
             }
         }
     };
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
 
     @Override
     public void onCreate() {
@@ -139,14 +233,7 @@ public class MusicService extends Service {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                pattern = MusicPlayer.getPlayerPattern();
-                if (pattern == 10) {
-                    sendPlayerStatus(3, pattern);
-                } else if (pattern == 11) {
-                    mediaPlayer.start();
-                } else if (pattern == 12) {
-                    sendPlayerStatus(12, 12);
-                }
+
             }
         });
 
@@ -156,37 +243,11 @@ public class MusicService extends Service {
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
         LogUtil.i(TAG, "onStart ");
-        Bundle bundle = intent.getBundleExtra("bundle");
-        if (null != bundle) {
-            this.currentMusicPath = bundle.getString("currentMusicPath");
-            this.status = bundle.getInt("status");
-            this.songID = bundle.getLong("songID");
-        }
-        pattern = MusicPlayer.getPlayerPattern();
-        if (this.status == 0) {
-            play(currentMusicPath);
-        } else if (this.status == 1) {
-            sendPlayerStatus(1, pattern);
-        } else if (this.status == 2) {
-            if (currentTime <= 0) {
-                play(currentMusicPath);
-            } else {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
-                    isPlaying = false;
-                } else {
-                    mediaPlayer.start();
-                    isPlaying = true;
-                }
-            }
-        } else if (this.status == 3) {
-            sendPlayerStatus(3, pattern);
-        }
-        initNotificationBar();
     }
 
-    public String getHttp(final String songid) {
-        LogUtil.i(TAG, "getHttp" + Long.parseLong(songid));
+
+    public String getHttp(final long songid, final Song song) {
+        LogUtil.i(TAG, "getHttp" + songid);
         //git请求
         Subscriber<Songurl> subscriberGet = new Subscriber<Songurl>() {
             @Override
@@ -201,6 +262,7 @@ public class MusicService extends Service {
 
             @Override
             public void onNext(Songurl songurl) {
+                Log.i(TAG, "onNext:");
                 try {
                     currentMusicPath = songurl.getBitrate().getFile_link();
                     mediaPlayer.reset();// 把各项参数恢复到初始状态
@@ -209,112 +271,19 @@ public class MusicService extends Service {
                     mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
                     mediaTime = mediaPlayer.getDuration();
                     handler.sendEmptyMessage(1);
-                    RxBus.getInstance().post((Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO));
+                    RxBus.getInstance().post(song);
+                    MsgCache.get().put(MUSIC_INFO, song);
+                    initNotificationBar();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         };
-        new HttpUser().getSongPath(subscriberGet, songid);
+        new HttpUser().getSongPath(subscriberGet, songid + "");
 
         return currentMusicPath;
     }
 
-
-    /**
-     * 播放音乐
-     */
-    private void play(String path) {
-        try {
-
-            Song song = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
-            if (song.type.equals(Constants.LOCAL_MUSIC)){
-                RxBus.getInstance().post(song);
-                mediaPlayer.reset();// 把各项参数恢复到初始状态
-                mediaPlayer.setDataSource(path);
-                mediaPlayer.prepare(); // 进行缓冲
-                mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
-                mediaTime = mediaPlayer.getDuration();
-                handler.sendEmptyMessage(1);
-            }else {
-                getHttp(song.id+"");
-            }
-//            SongLoader.getSongForID(MyApplication.getInstance(), songID)
-//                    .subscribeOn(Schedulers.io())
-//                    .subscribe(new Action1<Song>() {
-//                        @Override
-//                        public void call(Song song) {
-//                            RxBus.getInstance().post(song);
-//                        }
-//                    });
-            mediaPlayer.reset();// 把各项参数恢复到初始状态
-            mediaPlayer.setDataSource(path);
-            mediaPlayer.prepare(); // 进行缓冲
-            mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
-            mediaTime = mediaPlayer.getDuration();
-            handler.sendEmptyMessage(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 随机数
-     */
-    private int getRandomIndex(int end) {
-        int current = (int) (Math.random() * end);
-        return current;
-    }
-
-    private void sendPlayerStatus(int status, int pattern) {
-        mlist = SongsFragment.getMusicList();
-        Song infoEntity = null;
-        if (pattern == 10 || pattern == 11) {
-            if (mlist.size() > 0) {
-                int size = mlist.size();
-                if (status == 1) {
-                    for (int i = 0; i < size; i++) {
-                        if (currentMusicPath.equals(mlist.get(i).path)) {
-                            if (i - 1 >= 0) {
-                                currentMusicPath = mlist.get(i - 1).path;
-                                infoEntity = mlist.get(i - 1);
-                                songID = mlist.get(i - 1).id;
-                                break;
-                            } else {
-                                currentMusicPath = mlist.get(size - 1).path;
-                                infoEntity = mlist.get(size - 1);
-                                songID = mlist.get(size - 1).id;
-                                break;
-                            }
-                        }
-                    }
-                } else if (status == 3) {
-                    for (int i = 0; i < size; i++) {
-                        if (currentMusicPath.equals(mlist.get(i).path)) {
-                            if (i + 1 < size) {
-                                currentMusicPath = mlist.get(i + 1).path;
-                                infoEntity = mlist.get(i + 1);
-                                songID = mlist.get(i + 1).id;
-                                break;
-                            } else {
-                                currentMusicPath = mlist.get(0).path;
-                                infoEntity = mlist.get(0);
-                                songID = mlist.get(0).id;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (pattern == 12) {
-            int current = getRandomIndex(mlist.size());
-            currentMusicPath = mlist.get(current).path;
-            infoEntity = mlist.get(current);
-        }
-        MsgCache.get().put(MUSIC_INFO, infoEntity);
-        play(currentMusicPath);
-
-    }
 
     @Override
     public boolean stopService(Intent name) {
@@ -411,12 +380,6 @@ public class MusicService extends Service {
         }
     }
 
-    private class MyBinder extends Binder {
-        public MusicService getService() {
-            return MusicService.this;
-        }
-    }
-
     private class MyReceiver extends BroadcastReceiver {
 
         @Override
@@ -443,6 +406,7 @@ public class MusicService extends Service {
                 }
             }
         }
+
     }
 
     private void sendService(int status) {

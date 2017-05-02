@@ -42,6 +42,7 @@ public class FileUtils {
     public static String getLrcFileName(String artist, String title) {
         return getFileName(artist, title) + LRC;
     }
+
     public static String getFileName(String artist, String title) {
         artist = stringFilter(artist);
         title = stringFilter(title);
@@ -51,7 +52,7 @@ public class FileUtils {
         if (TextUtils.isEmpty(title)) {
             title = MyApplication.getInstance().getString(R.string.unknown);
         }
-        return artist + " - " + title;
+        return artist + "-" + title;
     }
 
     /**
@@ -76,5 +77,18 @@ public class FileUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean fileIsExists(String artist, String title) {
+        try {
+            String filePath = getAppDir() + "/Lyric/" + getLrcFileName(artist, title);
+            File file = new File(filePath);
+            if (!file.exists()) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 }
