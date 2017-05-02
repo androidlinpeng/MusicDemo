@@ -22,6 +22,20 @@ import static msgcopy.com.musicdemo.Constants.MUSIC_LIST;
 
 public class MusicPlayer {
 
+    public static void PlaySong(Context mContext, Songurl songurl){
+        Intent intentService = new Intent(mContext, MusicService.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("currentMusicPath", songurl.getBitrate().getFile_link());
+        bundle.putString("songID", songurl.getSonginfo().getSong_id());
+        bundle.putInt("status", 0);
+        intentService.putExtra("bundle", bundle);
+        mContext.startService(intentService);
+
+        Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1,songurl.getBitrate().getFile_link());
+        MsgCache.get().put(Constants.MUSIC_INFO,song);
+
+    }
+
     public static void playAll(Context context, List<Song> arraylist, int getAdapterPosition){
         Song song = arraylist.get(getAdapterPosition);
         Intent intentService = new Intent(context, MusicService.class);
@@ -35,16 +49,16 @@ public class MusicPlayer {
         MsgCache.get().put(MUSIC_LIST, arraylist);
     }
 
-    public static void onLinePlayAll(Context mContext, Songurl songurl,List<NewSong.SongListBean> arraylist, int getAdapterPosition){
+    public static void onLinePlayAll(Context mContext, Songurl songurl,List<NewSong.SongListBean> arraylist){
         Intent intentService = new Intent(mContext, MusicService.class);
         Bundle bundle = new Bundle();
         bundle.putString("currentMusicPath", songurl.getBitrate().getFile_link());
         bundle.putString("songID", songurl.getSonginfo().getSong_id());
         bundle.putInt("status", 0);
-        intentService.putExtra("onlinebundle", bundle);
+        intentService.putExtra("bundle", bundle);
         mContext.startService(intentService);
 
-        Song song = new Song(Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1);
+        Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1,songurl.getBitrate().getFile_link());
 
         MsgCache.get().put(Constants.MUSIC_INFO,song);
 
@@ -57,6 +71,19 @@ public class MusicPlayer {
 
 //        MsgCache.get().put(Constants.ONLINE_MUSIC_INFO, songurl);
 //        MsgCache.get().put(Constants.ONLINE_MUSIC_PLAYER_LIST, arraylist);
+    }
+
+    public static void onLinePlay(Context mContext, Songurl songurl){
+        Intent intentService = new Intent(mContext, MusicService.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("currentMusicPath", songurl.getBitrate().getFile_link());
+        bundle.putString("songID", songurl.getSonginfo().getSong_id());
+        bundle.putInt("status", 0);
+        intentService.putExtra("bundle", bundle);
+        mContext.startService(intentService);
+
+        Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1,songurl.getBitrate().getFile_link());
+        MsgCache.get().put(Constants.MUSIC_INFO,song);
     }
 
     public static Songurl getOnLineMusicInfo() {

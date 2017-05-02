@@ -3,6 +3,7 @@ package msgcopy.com.musicdemo.adapter;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import msgcopy.com.musicdemo.Constants;
+import msgcopy.com.musicdemo.HttpUser;
 import msgcopy.com.musicdemo.MsgCache;
 import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.modul.Songurl;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
+import msgcopy.com.musicdemo.utils.LogUtil;
+import rx.Subscriber;
+
+import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
 
 
 public class PlayerSongListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -30,6 +37,9 @@ public class PlayerSongListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private AppCompatActivity mContext;
     private long[] songIDs;
     private float topPlayScore;
+
+    private Subscriber<Songurl> subscriberGet;
+
 
     public PlayerSongListAdapter(AppCompatActivity context, List<Song> arraylist, String action, boolean withHeader) {
         if (arraylist == null) {
@@ -147,11 +157,37 @@ public class PlayerSongListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    MusicPlayer.playAll(mContext, arraylist, getAdapterPosition() - 1);
+                    if (arraylist.get(getAdapterPosition()).equals(Constants.LOCAL_MUSIC)) {
+                        MusicPlayer.playAll(mContext, arraylist, getAdapterPosition());
+                    }else {
+                        getHttp(arraylist.get(getAdapterPosition()).id+"",getAdapterPosition());
+                    }
                 }
             }, 100);
 
         }
+    }
+
+    public void getHttp(final String songid, final int position) {
+        LogUtil.i(TAG,"getHttp"+Long.parseLong(songid));
+        //git请求
+        subscriberGet = new Subscriber<Songurl>() {
+            @Override
+            public void onCompleted() {
+                Log.i(TAG, "onCompleted:");
+            }
+
+            @Override
+            public void onError(Throwable onError) {
+                Log.i(TAG, "onError:" + onError.getMessage());
+            }
+
+            @Override
+            public void onNext(Songurl songurl) {
+                MusicPlayer.PlaySong(mContext,songurl);
+            }
+        };
+        new HttpUser().getSongPath(subscriberGet,songid);
     }
 
 }

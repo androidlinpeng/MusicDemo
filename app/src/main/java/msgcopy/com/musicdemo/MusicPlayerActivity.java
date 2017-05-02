@@ -6,9 +6,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -19,20 +21,26 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.Formatter;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import me.wcy.lrcview.LrcView;
 import msgcopy.com.musicdemo.activity.BaseActivity;
 import msgcopy.com.musicdemo.adapter.PlayerSongListAdapter;
 import msgcopy.com.musicdemo.fragment.SongsFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.modul.online.SongLry;
+import msgcopy.com.musicdemo.modul.online.SongSearch;
 import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
+import msgcopy.com.musicdemo.utils.FileUtils;
 import msgcopy.com.musicdemo.utils.ToastUtils;
 import msgcopy.com.musicdemo.view.BlurringView;
+import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -83,8 +91,6 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
 
     private CircleImageView civTest;
 
-    private int INTERVAL = 45;//歌词每行的间隔
-
     private ProgressBar mediaProgress = null;
 
     private StringBuilder mFormatBuilder;
@@ -106,6 +112,14 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
     private int pattern;
 
     private long songID;
+
+    private LrcView mLrcViewFull;
+
+    private Subscriber<SongSearch> subscriberSearch;
+
+    private Subscriber<SongLry> subscriberSongLry;
+
+    private ViewPager viewPager;
 
 //    private BroadcastReceiver MReceiver = new BroadcastReceiver() {
 //        @Override
@@ -181,8 +195,74 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
 
         subscribePlayState();
 
+        loadLrc("");
+        setLrcLabel("");
+        getSongSearch();
     }
 
+    public void getSongSearch() {
+        String query = musicArtist+""+musicname;
+        //git请求
+        subscriberSearch = new Subscriber<SongSearch>() {
+            @Override
+            public void onCompleted() {
+                Log.i(TAG, "onCompleted:");
+            }
+
+            @Override
+            public void onError(Throwable onError) {
+                Log.i(TAG, "onError:" + onError.getMessage());
+                loadLrc("");
+                setLrcLabel("暂无歌词");
+            }
+
+            @Override
+            public void onNext(SongSearch songSearch) {
+                Log.i(TAG, "onNext:");
+                getSongLry(songSearch.getSong().get(0).getSongid());
+
+            }
+        };
+        new HttpUser().getSongSearch(subscriberSearch,query);
+    }
+
+    public void getSongLry(String songid) {
+
+        subscriberSongLry = new Subscriber<SongLry>() {
+            @Override
+            public void onCompleted() {
+                Log.i(TAG, "onCompleted:");
+            }
+
+            @Override
+            public void onError(Throwable onError) {
+                Log.i(TAG, "onError:" + onError.getMessage());
+                loadLrc("");
+                setLrcLabel("暂无歌词");
+            }
+
+            @Override
+            public void onNext(SongLry songLry) {
+                Log.i(TAG, "onNext:");
+                String filePath = FileUtils.getLrcDir() + FileUtils.getLrcFileName(musicArtist, musicname);
+                FileUtils.saveLrcFile(filePath, songLry.getLrcContent());
+                loadLrc(filePath);
+            }
+        };
+        new HttpUser().getSongLry(subscriberSongLry,songid);
+    }
+
+    private void loadLrc(String path) {
+        Log.i("loadLrc","path:"+path+"-----------"+musicPath);
+//        String path =
+        File file = new File(path);
+        mLrcViewFull.loadLrc(file);
+    }
+
+    private void setLrcLabel(String label) {
+        Log.i("loadLrc","label:"+label);
+        mLrcViewFull.setLabel(label);
+    }
 
     public void playerSongList() {
         final PopupWindow popupWindow = new PopupWindow(this);
@@ -242,6 +322,8 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
                                     long pos = 1000L * position / duration;
                                     //显示播放进度
                                     mediaProgress.setProgress((int) pos);
+                                    Log.i("loadLrc","progress:"+position);
+                                    mLrcViewFull.updateTime(position);
                                 }
                             }
 
@@ -262,6 +344,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
                                 music_name.setText(musicname);
                                 artist.setText(musicArtist);
                                 initView();
+                                getSongSearch();
                             }
                         }
                     }
@@ -275,6 +358,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
 
     private void initMediaController() {
 
+        this.mLrcViewFull = (LrcView) findViewById(R.id.lrc_view_full);
         this.player_list = (ImageView) findViewById(R.id.imag_player_list);
         this.music_share = (ImageView) findViewById(R.id.music_share);
         this.panel_back = (ImageView) findViewById(R.id.panel_back);
@@ -299,6 +383,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
                         long newposition = (duration * progress) / 1000L;
 //                        long newposition = 1000L * progress / duration;
                         sendBroadcast(newposition);
+                        mLrcViewFull.updateTime(progress);
                     }
 
                 }
@@ -372,9 +457,9 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
 
     private void updatePausePlay(boolean isPlaying) {
         if (isPlaying) {
-            this.play.setImageResource(R.drawable.ic_pause_white_36dp);
+            this.play.setImageResource(R.drawable.play_btn_pause_selector);
         } else {
-            this.play.setImageResource(R.drawable.ic_play_white_36dp);
+            this.play.setImageResource(R.drawable.play_btn_play_pause_selector);
         }
     }
 

@@ -178,7 +178,8 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    getHttp(arraylist.get(getAdapterPosition() - 1).getSong_id(),getAdapterPosition() - 1);
+                    LogUtil.i("Songurl",getAdapterPosition()+"------------"+arraylist.get(getAdapterPosition()).getTitle());
+                    getHttp(arraylist.get(getAdapterPosition()-2).getSong_id(),getAdapterPosition()-2);
                 }
             }, 100);
 
@@ -219,8 +220,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             @Override
             public void onNext(Songurl songurl) {
-
-                MusicPlayer.onLinePlayAll(mContext,songurl,arraylist, position);
+                MusicPlayer.onLinePlayAll(mContext,songurl,arraylist);
             }
         };
         new HttpUser().getSongPath(subscriberGet,songid);

@@ -8,6 +8,7 @@ import java.io.Serializable;
 
 public class Song implements Serializable{
 
+    public String type = "local_music";
     public final long albumId;
     public final String albumName;
     public final long artistId;
@@ -53,6 +54,19 @@ public class Song implements Serializable{
         this.duration = _duration;
         this.trackNumber = _trackNumber;
         this.path = _path;
+    }
+
+    public Song(String type, long id, long albumId, long artistId, String title, String artistName, String albumName, int duration, int trackNumber, String path) {
+        this.type = type;
+        this.id = id;
+        this.albumId = albumId;
+        this.artistId = artistId;
+        this.title = title;
+        this.artistName = artistName;
+        this.albumName = albumName;
+        this.trackNumber = trackNumber;
+        this.duration = duration;
+        this.path = path;
     }
 
     public void setPlayCountScore(float playCountScore) {

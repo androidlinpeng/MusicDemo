@@ -112,6 +112,7 @@ public class SongsFragment extends BaseFragment {
                                 folderPath.add(i, song.path);
                                 i++;
                                 musicList.add(song);
+                                Log.i("songList", "" + song.path);
                                 Log.i("songList", "" + song.id);
                             }
                             mAdapter.setSongList(musicList);

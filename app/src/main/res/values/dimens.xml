@@ -29,6 +29,8 @@
     <dimen name="text_margin">16dp</dimen>
 
     <dimen name="spacing_card">16dp</dimen>
+    <dimen name="text_size_common">18dp</dimen>
+
 
     <!--500px BlurringView -->
     <integer name="default_blur_radius">15</integer>

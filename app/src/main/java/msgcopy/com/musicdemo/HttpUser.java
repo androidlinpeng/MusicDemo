@@ -2,8 +2,8 @@ package msgcopy.com.musicdemo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Environment;
-import android.telephony.TelephonyManager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 import msgcopy.com.musicdemo.modul.NewSong;
 import msgcopy.com.musicdemo.modul.SongList;
 import msgcopy.com.musicdemo.modul.Songurl;
+import msgcopy.com.musicdemo.modul.online.SongLry;
+import msgcopy.com.musicdemo.modul.online.SongSearch;
 import msgcopy.com.musicdemo.service.UserService;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
@@ -40,9 +42,28 @@ public class HttpUser {
     public static final int HTTP_WRITE_TIMEOUT = 10 * 1000;
     public static final int HTTP_CONNECT_TIMEOUT = 10 * 1000;
     private static final String HTTP_CACHE_DIR = "http";
+    private static final String USER_AGENT = "User-Agent";
 
     private Retrofit retrofit;
     private UserService userService;
+
+    public void getSongLry(Subscriber<SongLry> subscriber, String songid) {
+        userService = getRetrofit().create(UserService.class);
+        userService.getSongLry(songid)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
+
+    public void getSongSearch(Subscriber<SongSearch> subscriber, String query) {
+        userService = getRetrofit().create(UserService.class);
+        userService.getSongSearch(query)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
 
     public void getSongPath(Subscriber<Songurl> subscriber, String songid) {
         userService = getRetrofit().create(UserService.class);
@@ -109,23 +130,14 @@ public class HttpUser {
         @Override
         public Response intercept(Chain chain) throws IOException {
             final Request.Builder builder = chain.request().newBuilder();
-
-            Context context= MyApplication.getInstance();
-            String uuid = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
-
-            builder.addHeader("Accept-Encoding","gzip");
-            builder.addHeader("User-Agent","android_5.9.9.4;baiduyinyue");
-//            builder.addHeader("cuid","38D9C3D58F2B4550E00B41F2819D36C4");
-//            builder.addHeader("deviceid",uuid);
-            builder.addHeader("cuid","BC8054D71DA30123B485889EAB3D3F7A");
-            builder.addHeader("deviceid","869161027041482");
-            builder.addHeader("Connection","Keep-Alive");
-            builder.addHeader("Host","baifen.music.baidu.com");
+            builder.addHeader(USER_AGENT,makeUserAgent());
             return chain.proceed(builder.build());
 
         }
     }
-
+    private String makeUserAgent() {
+        return Build.BRAND + "/" + Build.MODEL + "/" + Build.VERSION.RELEASE;
+    }
 
     public class ReceivedCookiesInterceptor implements Interceptor {
 

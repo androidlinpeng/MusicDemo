@@ -3,12 +3,16 @@ package msgcopy.com.musicdemo.fragment;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+
+import com.jcodecraeer.xrecyclerview.ProgressStyle;
+import com.jcodecraeer.xrecyclerview.XRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +34,14 @@ public class MusicHallListFragment extends BaseFragment {
     private static final String TAG = "MusicHallListFragment";
 
     @BindView(R.id.recyclerview)
-    RecyclerView recyclerView;
+    XRecyclerView recyclerView;
     private MusicHallListAdapter mAdapter;
     private LinearLayoutManager linearLayoutManager;
 
     private Subscriber<NewSong> subscriberGet;
     private String type = "";
+
+    private int loadingNumber = 20;
 
     @Override
     protected int setLayoutResourceID() {
@@ -57,8 +63,35 @@ public class MusicHallListFragment extends BaseFragment {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.addItemDecoration(new ItemListDivider(getActivity()));
         recyclerView.setAdapter(mAdapter);
+        recyclerView.setRefreshProgressStyle(ProgressStyle.BallSpinFadeLoader);
+        recyclerView.setLoadingMoreProgressStyle(ProgressStyle.Pacman);
 
-        getHttp(type,""+20);
+        recyclerView.setLoadingListener(new XRecyclerView.LoadingListener() {
+            @Override
+            public void onRefresh() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        getHttp(type,""+loadingNumber);
+                        recyclerView.refreshComplete();
+                    }
+                },1000);
+            }
+
+            @Override
+            public void onLoadMore() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadingNumber += 10;
+                        getHttp(type,""+loadingNumber);
+                        recyclerView.loadMoreComplete();
+                    }
+                },1000);
+            }
+        });
+
+        getHttp(type,""+loadingNumber);
 
     }
 
