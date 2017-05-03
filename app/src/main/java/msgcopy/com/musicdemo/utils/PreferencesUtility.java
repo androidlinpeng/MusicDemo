@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 
+import msgcopy.com.musicdemo.Constants;
+
 /**
  * Created by hefuyi on 2016/11/3.
  */
@@ -21,6 +23,8 @@ public class PreferencesUtility {
     private static final String TOGGLE_ALBUM_GRID = "toggle_album_grid";
     private static final String TOGGLE_PLAYLIST_VIEW = "toggle_playlist_view";
     private static final String START_PAGE_INDEX = "start_page_index";
+    private static final String PLAY_SONGID = "play_songid";
+    private static final String MUSIC_MODE = "music_MODE";
     private static PreferencesUtility sInstance;
 
     private static volatile SharedPreferences mPreferences;
@@ -141,6 +145,26 @@ public class PreferencesUtility {
     public void setPlaylistView(final int i) {
         final SharedPreferences.Editor editor = mPreferences.edit();
         editor.putInt(TOGGLE_PLAYLIST_VIEW, i);
+        editor.apply();
+    }
+
+    public long getPlaySongID() {
+        return mPreferences.getLong(PLAY_SONGID ,0);
+    }
+
+    public void setPlaySongID(final long i) {
+        final SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putLong(PLAY_SONGID, i);
+        editor.apply();
+    }
+
+    public String getStartMusicMode() {
+        return mPreferences.getString(MUSIC_MODE , Constants.LOCAL_MUSIC);
+    }
+
+    public void setStartMusicMode(final String string) {
+        final SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(MUSIC_MODE, string);
         editor.apply();
     }
 

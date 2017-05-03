@@ -19,4 +19,12 @@
         <attr name="overlayColor" format="color" />
     </declare-styleable>
 
+    <string-array name="online_music_dialog">
+        <item>歌手信息</item>
+        <item>下载</item>
+    </string-array>
+    <string-array name="online_music_dialog_without_download">
+        <item>歌手信息</item>
+    </string-array>
+
 </resources>

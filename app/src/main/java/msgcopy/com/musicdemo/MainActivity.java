@@ -1,15 +1,12 @@
 package msgcopy.com.musicdemo;
 
 import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -48,16 +45,15 @@ import msgcopy.com.musicdemo.fragment.SearchFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
-import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
+import msgcopy.com.musicdemo.utils.PreferencesUtility;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-import static msgcopy.com.musicdemo.Constants.NOTIC_CANCEL;
 import static msgcopy.com.musicdemo.R.id.toolbar;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -94,6 +90,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private MainBroadcastReceiver mainReceiver;
 
     private ServiceConnection myServiceConnection;
+
+    private PreferencesUtility mPreferences;
 
     private class MainBroadcastReceiver extends BroadcastReceiver {
 
@@ -147,12 +145,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         setContentView(R.layout.activity_main);
 
+        mPreferences = PreferencesUtility.getInstance(this);
+
         mToolbar = (Toolbar) findViewById(toolbar);
         setSupportActionBar(mToolbar);
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
 
-        mToolbar.setTitle(R.string.str_home);
+//        mToolbar.setTitle(R.string.str_home);
 
         initView();
 
@@ -171,8 +171,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initDefaultFragment();
         subscribeChangedSong();
         subscribePlayState();
-
-//        initNotificationBar(currentsong);
 
         mainReceiver = new MainBroadcastReceiver();
         IntentFilter filter = new IntentFilter();
@@ -217,48 +215,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private final static int MESSAGE_CENTER_NOTIFY_ID = 2;
-
-    public void initNotificationBar(Song song) {
-        if (!CommonUtil.isBlank(song)) {
-            notification = new Notification();
-            //初始化通知
-            notification.icon = R.drawable.icon_album_default;
-            contentView = new RemoteViews(getPackageName(), R.layout.notification_control);
-            notification.contentView = contentView;
-
-            Bitmap bitmap = BitmapUtils.createAlbumArt(song.path);
-            if (bitmap != null) {
-                contentView.setImageViewBitmap(R.id.imag_albumArt, bitmap);
-            } else {
-                contentView.setImageViewResource(R.id.imag_albumArt, R.drawable.icon_album_default);
-            }
-            if (!CommonUtil.isBlank(song)) {
-                contentView.setTextViewText(R.id.notic_song_title, "" + song.title);
-                contentView.setTextViewText(R.id.notic_song_artist, "" + song.artistName);
-            }
-
-            Intent intentPlay = new Intent(Constants.NOTIC_PLAY);//新建意图，并设置action标记为"play"，用于接收广播时过滤意图信息
-            PendingIntent pIntentPlay = PendingIntent.getBroadcast(this, 0, intentPlay, 0);
-            contentView.setImageViewResource(R.id.img_notic_play, getPlayIconRes(isPlaying));
-            contentView.setOnClickPendingIntent(R.id.img_notic_play, pIntentPlay);//为play控件注册事件
-            Intent intentPause = new Intent(Constants.NOTIC_PAUSE);
-//          PendingIntent pIntentPause = PendingIntent.getBroadcast(this, 0, intentPause, 0);
-//          contentView.setOnClickPendingIntent(R.id.bt_notic_pause, pIntentPause);
-            Intent intentNext = new Intent(Constants.NOTIC_NEXT);
-            PendingIntent pIntentNext = PendingIntent.getBroadcast(this, 0, intentNext, 0);
-            contentView.setOnClickPendingIntent(R.id.img_notic_next, pIntentNext);
-            Intent intentLast = new Intent(Constants.NOTIC_LAST);
-            PendingIntent pIntentLast = PendingIntent.getBroadcast(this, 0, intentLast, 0);
-            contentView.setOnClickPendingIntent(R.id.img_notic_last, pIntentLast);
-            Intent intentCancel = new Intent(NOTIC_CANCEL);
-            PendingIntent pIntentCancel = PendingIntent.getBroadcast(this, 0, intentCancel, 0);
-            contentView.setOnClickPendingIntent(R.id.img_notic_cancel, pIntentCancel);
-            notification.flags = notification.FLAG_NO_CLEAR;//设置通知点击或滑动时不被清除
-            NotificationManager notificationManager = (NotificationManager) MyApplication.getInstance().getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.notify(MESSAGE_CENTER_NOTIFY_ID, notification);//开启通知
-
-        }
-    }
 
     private static int getPlayIconRes(boolean isPlaying) {
         if (isPlaying) {
@@ -345,11 +301,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void initDefaultFragment() {
-        mToolbar.setTitle(R.string.str_home);
         mFragmentManager = getSupportFragmentManager();
-        mCurrentFragment = ViewUtils.createFragment(MainFragment.class, true);
+        if (mPreferences.getStartMusicMode().equals(Constants.LOCAL_MUSIC)) {
+            mToolbar.setTitle(R.string.str_home);
+            mCurrentFragment = ViewUtils.createFragment(MainFragment.class, true);
+        }else {
+            mToolbar.setTitle(R.string.str_music_hall);
+            mCurrentFragment = ViewUtils.createFragment(MusicHallFragment.class, true);
+        }
         mFragmentManager.beginTransaction().add(R.id.frame_content, mCurrentFragment).commit();
-
         mNavigationView.getMenu().getItem(0).setChecked(true);
     }
 
@@ -394,6 +354,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if (id == R.id.nav_home) {
             mToolbar.setTitle(R.string.str_home);
             switchFragment(MainFragment.class);
+            mPreferences.setStartMusicMode(Constants.LOCAL_MUSIC);
         } else if (id == R.id.nav_search) {
             mToolbar.setTitle(R.string.str_search);
             backStackFragment(SearchFragment.class);
@@ -403,6 +364,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.nav_music_hall) {
             mToolbar.setTitle(R.string.str_music_hall);
             switchFragment(MusicHallFragment.class);
+            mPreferences.setStartMusicMode(Constants.ONLINE_MUSIC);
         } else if (id == R.id.nav_collect) {
             mToolbar.setTitle(R.string.str_collect);
         } else if (id == R.id.nav_settings) {
@@ -450,11 +412,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                                     .placeholder(R.drawable.icon_album_default)
                                     .centerCrop()
                                     .into(imag_albumArt);
+                        }else {
+                            Glide.with(getApplication()).load(ListenerUtil.getAlbumArtUri(song.albumId).toString())
+                                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                                    .placeholder(R.drawable.icon_album_default)
+                                    .centerCrop()
+                                    .into(imag_albumArt);
                         }
                         text_song_title.setText("" + song.title);
                         text_song_artist.setText("" + song.artistName);
                         currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
-//                        initNotificationBar(song);
 
                     }
                 }, new Action1<Throwable>() {
@@ -497,17 +464,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onDestroy() {
         super.onDestroy();
         RxBus.getInstance().unSubscribe(this);
-    }
-
-    private void sendService(int status) {
-        Intent intentService = new Intent();
-        Bundle bundle = new Bundle();
-        bundle.putString("currentMusicPath", currentsong.path);
-        bundle.putInt("status", status);
-        bundle.putLong("songID", currentsong.id);
-        intentService.putExtra("bundle", bundle);
-//        startService(intentService);
-        MyApplication.getInstance().getMusicService().pause(intentService);
+        if (myServiceConnection != null) {
+            unbindService(myServiceConnection);
+        }
     }
 
     private void updatePausePlay(boolean isPlaying) {

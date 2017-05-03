@@ -12,25 +12,6 @@ import java.io.FileOutputStream;
  */
 public class BitmapUtils {
 
-    public static String createAlbumArt2(String filePath) {
-        String string = null;
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        try {
-            retriever.setDataSource(filePath); //设置数据源
-            byte[] embedPic = retriever.getEmbeddedPicture(); //得到字节型数据
-            string = new String(embedPic);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                retriever.release();
-            } catch (Exception e2) {
-                e2.printStackTrace();
-            }
-        }
-        return string;
-    }
-
     public static Bitmap createAlbumArt(String filePath){
         Bitmap bitmap = null;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();

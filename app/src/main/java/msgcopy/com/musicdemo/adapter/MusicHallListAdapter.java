@@ -17,6 +17,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
+import msgcopy.com.musicdemo.Constants;
 import msgcopy.com.musicdemo.HttpUser;
 import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.R;
@@ -33,15 +34,23 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     private static final String TAG = "MusicHallListAdapter";
 
-    public int currentlyPlayingPosition;
     private List<NewSong.SongListBean> arraylist;
     private AppCompatActivity mContext;
     private long[] songIDs;
     private boolean withHeader;
     private float topPlayScore;
     private String action;
-
     private Subscriber<Songurl> subscriberGet;
+
+    public interface OnMoreClickListener {
+        void onMoreClick(int position);
+    }
+
+    public OnMoreClickListener moreClickListener;
+
+    public OnMoreClickListener setOnMoreClickListener(OnMoreClickListener Listener) {
+        return moreClickListener = Listener;
+    }
 
     public MusicHallListAdapter(AppCompatActivity context, List<NewSong.SongListBean> arraylist, String action, boolean withHeader) {
         if (arraylist == null) {
@@ -82,7 +91,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         int viewType = getItemViewType(position);
         switch (viewType) {
             case Type.TYPE_PLAY_SHUFFLE:
@@ -111,6 +120,12 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
                     itemHolder.playscore.setVisibility(View.VISIBLE);
                     RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) itemHolder.playscore.getLayoutParams();
                 }
+                itemHolder.popupMenu.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        moreClickListener.onMoreClick(position-1);
+                    }
+                });
 
                 break;
         }
@@ -178,8 +193,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    LogUtil.i("Songurl",getAdapterPosition()+"------------"+arraylist.get(getAdapterPosition()).getTitle());
-                    getHttp(arraylist.get(getAdapterPosition()-2).getSong_id(),getAdapterPosition()-2);
+                    getHttp(arraylist.get(getAdapterPosition() - 2).getSong_id(), getAdapterPosition() - 2);
                 }
             }, 100);
 
@@ -198,14 +212,14 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-
+                    getHttp(arraylist.get(getAdapterPosition() - 1).getSong_id(), getAdapterPosition() - 1);
                 }
             }, 100);
         }
     }
 
     public void getHttp(final String songid, final int position) {
-        LogUtil.i(TAG,"getHttp"+Long.parseLong(songid));
+        LogUtil.i(TAG, "getHttp" + Long.parseLong(songid));
         //git请求
         subscriberGet = new Subscriber<Songurl>() {
             @Override
@@ -220,9 +234,10 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             @Override
             public void onNext(Songurl songurl) {
-                MusicPlayer.onLinePlayAll(mContext,songurl,arraylist,position);
+                MusicPlayer.setPlayerPattern(Constants.PLAYTER_PATTERN_RANDOM);
+                MusicPlayer.onLinePlayAll(mContext, songurl, arraylist, position);
             }
         };
-        new HttpUser().getSongPath(subscriberGet,songid);
+        new HttpUser().getSongPath(subscriberGet, songid);
     }
 }

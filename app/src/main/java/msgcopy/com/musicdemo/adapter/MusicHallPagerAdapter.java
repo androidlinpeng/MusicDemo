@@ -9,7 +9,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import java.util.List;
 
 import msgcopy.com.musicdemo.fragment.MusicHallListFragment;
-import msgcopy.com.musicdemo.modul.online.MusicHallTop;
+import msgcopy.com.musicdemo.modul.SongList;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 
 /**
@@ -19,11 +19,10 @@ import msgcopy.com.musicdemo.utils.ViewUtils;
 public class MusicHallPagerAdapter extends FragmentStatePagerAdapter {
 
     private static String TAG = "MusicHallPagerAdapter";
-//    private static String[] mTitles;
-//    private List<SongList.ContentBeanX> mlist;
-    private List<MusicHallTop> mlist;
+    private List<SongList.ContentBeanX> mlist;
+//    private List<MusicHallTop> mlist;
 
-    public MusicHallPagerAdapter(FragmentManager fm, List<MusicHallTop> list) {
+    public MusicHallPagerAdapter(FragmentManager fm, List<SongList.ContentBeanX> list) {
         super(fm);
         this.mlist = list;
     }

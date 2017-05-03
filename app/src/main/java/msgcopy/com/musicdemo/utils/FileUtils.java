@@ -26,8 +26,18 @@ public class FileUtils {
         return Environment.getExternalStorageDirectory() + "/MusicDemo";
     }
 
+    public static String getMusicDir() {
+        String dir = getAppDir() + "/Music/";
+        return mkdirs(dir);
+    }
+
     public static String getLrcDir() {
         String dir = getAppDir() + "/Lyric/";
+        return mkdirs(dir);
+    }
+
+    public static String getRelativeMusicDir() {
+        String dir = "MusicDemo/Music/";
         return mkdirs(dir);
     }
 
@@ -37,6 +47,10 @@ public class FileUtils {
             file.mkdirs();
         }
         return dir;
+    }
+
+    public static String getMp3FileName(String artist, String title) {
+        return getFileName(artist, title) + MP3;
     }
 
     public static String getLrcFileName(String artist, String title) {

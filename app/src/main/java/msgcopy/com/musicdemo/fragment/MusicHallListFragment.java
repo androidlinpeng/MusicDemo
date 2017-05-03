@@ -1,9 +1,11 @@
 package msgcopy.com.musicdemo.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
@@ -14,22 +16,26 @@ import android.view.View;
 import com.jcodecraeer.xrecyclerview.ProgressStyle;
 import com.jcodecraeer.xrecyclerview.XRecyclerView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import msgcopy.com.musicdemo.DownloadOnlineMusic;
 import msgcopy.com.musicdemo.HttpUser;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.adapter.MusicHallListAdapter;
 import msgcopy.com.musicdemo.modul.NewSong;
+import msgcopy.com.musicdemo.utils.FileUtils;
+import msgcopy.com.musicdemo.utils.ToastUtils;
 import rx.Subscriber;
 
 /**
  * Created by liang on 2017/4/21.
  */
 
-public class MusicHallListFragment extends BaseFragment {
+public class MusicHallListFragment extends BaseFragment implements MusicHallListAdapter.OnMoreClickListener{
 
     private static final String TAG = "MusicHallListFragment";
 
@@ -37,11 +43,11 @@ public class MusicHallListFragment extends BaseFragment {
     XRecyclerView recyclerView;
     private MusicHallListAdapter mAdapter;
     private LinearLayoutManager linearLayoutManager;
-
     private Subscriber<NewSong> subscriberGet;
+    List<NewSong.SongListBean> song_list;
     private String type = "";
 
-    private int loadingNumber = 20;
+    private int loadingNumber = 10;
 
     @Override
     protected int setLayoutResourceID() {
@@ -91,6 +97,8 @@ public class MusicHallListFragment extends BaseFragment {
             }
         });
 
+        mAdapter.setOnMoreClickListener(this);
+
         getHttp(type,""+loadingNumber);
 
     }
@@ -111,12 +119,60 @@ public class MusicHallListFragment extends BaseFragment {
             @Override
             public void onNext(NewSong newSong) {
                 Log.i(TAG, "onNext:"+newSong.getBillboard().getName());
-                List<NewSong.SongListBean> song_list = new ArrayList<NewSong.SongListBean>();
+                song_list = new ArrayList<NewSong.SongListBean>();
                 song_list = newSong.getSong_list();
                 mAdapter.setSongList(song_list);
             }
         };
         new HttpUser().getGetData(subscriberGet,type,size);
+    }
+
+    @Override
+    public void onMoreClick(int position) {
+        final NewSong.SongListBean song = song_list.get(position);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        dialog.setTitle(song.getTitle());
+        String path = FileUtils.getMusicDir() + FileUtils.getMp3FileName(song.getArtist_name(), song.getTitle());
+        File file = new File(path);
+        int itemsId = file.exists() ? R.array.online_music_dialog_without_download : R.array.online_music_dialog;
+        dialog.setItems(itemsId, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:// 查看歌手信息
+                        artistInfo(song);
+                        break;
+                    case 1:// 下载
+                        download(song);
+                        break;
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    private void artistInfo(NewSong.SongListBean song) {
+
+    }
+
+    private void download(final NewSong.SongListBean song) {
+        new DownloadOnlineMusic(getActivity(), song) {
+            @Override
+            public void onPrepare() {
+//                mProgressDialog.show();
+            }
+
+            @Override
+            public void onExecuteSuccess(Void aVoid) {
+                ToastUtils.showLong(getActivity(),"正在下载"+song.getTitle());
+            }
+
+            @Override
+            public void onExecuteFail(Exception e) {
+                ToastUtils.showLong(getActivity(),"无法下载");
+            }
+        }.execute();
+
     }
 
 

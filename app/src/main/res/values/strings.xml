@@ -20,7 +20,7 @@
     <string name="search_library">本地搜索</string>
     <string name="str_search_lyrics">搜索歌词中...</string>
 
-    <string name="play_shuffle">play_shuffle</string>
+    <string name="play_shuffle">随机播放</string>
     <string name="content_empty_default">空空如也</string>
     <string name="unknown">未知</string>
 

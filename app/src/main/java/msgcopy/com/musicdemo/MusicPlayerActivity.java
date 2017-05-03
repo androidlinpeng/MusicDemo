@@ -44,6 +44,7 @@ import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.FileUtils;
+import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.view.BlurringView;
 import rx.Subscriber;
 import rx.Subscription;
@@ -51,6 +52,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
+import static android.R.attr.path;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_CIRCULATION;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_RANDOM;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_SINGLE;
@@ -207,6 +209,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
 //        intentFilter.addAction(MusicService.MUSIC_PLAYER_STATE);
 //        this.registerReceiver(this.MReceiver, intentFilter);
 
+        subscribeChangedSong();
         subscribePlayState();
 
         getSongSearch();
@@ -318,6 +321,33 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
         popupWindow.showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
     }
 
+    private void subscribeChangedSong() {
+        Subscription subscription = RxBus.getInstance()
+                .toObservable(Song.class)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+//                .distinctUntilChanged()
+                .subscribe(new Action1<Song>() {
+                    @Override
+                    public void call(Song song) {
+                        musicname = song.title;
+                        musicArtist = song.artistName;
+                        musicPath = song.path;
+                        songID = song.id;
+                        music_name.setText(musicname);
+                        artist.setText(musicArtist);
+                        initView();
+                        getSongSearch();
+                        LogUtil.i(TAG,"musicPath"+musicPath+"-----------------"+path);
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                    }
+                });
+        RxBus.getInstance().addSubscription(this, subscription);
+    }
+
     private void subscribePlayState() {
         Subscription subscription = RxBus.getInstance()
                 .toObservable(PlayState.class)
@@ -337,12 +367,10 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
                                     long pos = 1000L * position / duration;
                                     //显示播放进度
                                     mediaProgress.setProgress((int) pos);
-                                    Log.i("loadLrc", "progress:" + position);
                                     mLrcView.updateTime(position);
                                     mLrcViewFull.updateTime(position);
                                 }
                             }
-
                             if (curMediaTime != null) {
                                 curMediaTime.setText(stringForTime(position));
                             }
@@ -350,18 +378,6 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
                                 mediaTime.setText(stringForTime(duration));
                             }
                             updatePausePlay(isPlaying);
-
-                            if (!path.equals(musicPath)) {
-                                Song infoEntity = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
-                                musicname = infoEntity.title;
-                                musicArtist = infoEntity.artistName;
-                                musicPath = infoEntity.path;
-                                songID = infoEntity.id;
-                                music_name.setText(musicname);
-                                artist.setText(musicArtist);
-                                initView();
-                                getSongSearch();
-                            }
                         }
                     }
                 }, new Action1<Throwable>() {
@@ -391,7 +407,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
         circlePageIndicator.setOnPageChangeListener(this);
         circlePageIndicator.setStrokeWidth(0);
         circlePageIndicator.setFillColor(getResources().getColor(R.color.white));
-        circlePageIndicator.setPageColor(getResources().getColor(R.color.sub_content_colorDark));
+        circlePageIndicator.setPageColor(getResources().getColor(R.color.indicator_color));
         circlePageIndicator.setViewPager(viewPager);
 
     }

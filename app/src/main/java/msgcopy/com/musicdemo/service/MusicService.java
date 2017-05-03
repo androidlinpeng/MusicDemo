@@ -36,6 +36,7 @@ import msgcopy.com.musicdemo.modul.Songurl;
 import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.LogUtil;
+import msgcopy.com.musicdemo.utils.PreferencesUtility;
 import msgcopy.com.musicdemo.utils.ToastUtils;
 import rx.Subscriber;
 
@@ -46,21 +47,11 @@ import static msgcopy.com.musicdemo.Constants.NOTIC_CANCEL;
  */
 public class MusicService extends Service {
 
-    public static final String UPDATE_ACTION = "com.wwj.action.UPDATE_ACTION";  //更新动作
-
-    public static final String CTL_ACTION = "com.wwj.action.CTL_ACTION";        //控制动作
-
-    public static final String MUSIC_DURATION = "com.wwj.action.MUSIC_DURATION";//新音乐长度更新动作
-
     private static final String TAG = "MusicService";
 
     public static final String UPDATE_MUSIC_PLAYER_PATTERN = "update_music_player_pattern";
 
     public static final String MUSIC_CURRENT_POSITION = "music_current_position";  //当前音乐播放时间更新动作
-
-    public static final String MUSIC_SCREEN_OFF = "music_screen_off";
-
-    public static final String MUSIC_PLAYER_STATE = "music_player_state";
 
     public static final String MUSIC_INFO = "current_music_info";
 
@@ -75,6 +66,8 @@ public class MusicService extends Service {
     private int mediaTime;        //播放时间
 
     private boolean isPlaying = false;
+
+    private boolean isPreparing = false;
 
     private int status;
 
@@ -136,6 +129,8 @@ public class MusicService extends Service {
             mPlayPosition = position;
             if (song.type.equals(Constants.LOCAL_MUSIC)) {
                 RxBus.getInstance().post(song);
+                isPreparing =true;
+                PreferencesUtility.getInstance(MyApplication.getInstance()).setPlaySongID(song.id);
                 currentMusicPath = song.path;
                 mediaPlayer.reset();// 把各项参数恢复到初始状态
                 mediaPlayer.setDataSource(song.path);
@@ -157,9 +152,12 @@ public class MusicService extends Service {
         if (mediaPlayer.isPlaying() && mediaPlayer != null) {
             mediaPlayer.pause();
             isPlaying = false;
-        } else {
+        } else if (isPreparing && mediaPlayer != null){
             mediaPlayer.start();
             isPlaying = true;
+        }else {
+            mPlayPosition = updatePlayingPosition();
+            play(mlist.get(mPlayPosition),mPlayPosition);
         }
         handler.sendEmptyMessage(1);
         initNotificationBar();
@@ -196,6 +194,20 @@ public class MusicService extends Service {
 
     }
 
+    public int updatePlayingPosition() {
+        int position = 0;
+        long id = PreferencesUtility.getInstance(MyApplication.getInstance()).getPlaySongID();
+        for (int i = 0; i < mlist.size(); i++) {
+            if (mlist.get(i).id == id) {
+                position = i;
+                break;
+            }
+        }
+        mPlayPosition = position;
+        PreferencesUtility.getInstance(MyApplication.getInstance()).setPlaySongID(mlist.get(mPlayPosition).id);
+        return mPlayPosition;
+    }
+
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -205,7 +217,10 @@ public class MusicService extends Service {
                     if (mediaPlayer != null) {
                         try {
                             currentTime = mediaPlayer.getCurrentPosition(); // 获取当前音乐播放的位置
-                            handler.sendEmptyMessageDelayed(1, 100);
+                            if (currentTime>=mediaTime){
+                                next();
+                            }
+                            handler.sendEmptyMessageDelayed(1, 500);
                             PlayState playState = new PlayState(currentMusicPath, currentTime, mediaTime, isPlaying, false);
                             RxBus.getInstance().post(playState);
                         } catch (Exception e) {
@@ -247,7 +262,6 @@ public class MusicService extends Service {
 
 
     public String getHttp(final long songid, final Song song) {
-        LogUtil.i(TAG, "getHttp" + songid);
         //git请求
         Subscriber<Songurl> subscriberGet = new Subscriber<Songurl>() {
             @Override
@@ -272,6 +286,8 @@ public class MusicService extends Service {
                     mediaTime = mediaPlayer.getDuration();
                     handler.sendEmptyMessage(1);
                     RxBus.getInstance().post(song);
+                    isPreparing =true;
+                    PreferencesUtility.getInstance(MyApplication.getInstance()).setPlaySongID(song.id);
                     MsgCache.get().put(MUSIC_INFO, song);
                     initNotificationBar();
                 } catch (IOException e) {
@@ -308,6 +324,7 @@ public class MusicService extends Service {
             e.printStackTrace();
         }
         unregisterReceiver(this.myReceiver);
+        MyApplication.getInstance().setMusicService(null);
     }
 
     private class PreparedListener implements MediaPlayer.OnPreparedListener {
