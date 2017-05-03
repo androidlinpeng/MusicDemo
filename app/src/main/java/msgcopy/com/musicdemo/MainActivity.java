@@ -57,7 +57,7 @@ import rx.schedulers.Schedulers;
 import static msgcopy.com.musicdemo.R.id.toolbar;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
-
+    private static final String TAG = "MainActivity";
     private FragmentManager mFragmentManager;
     public static Fragment mCurrentFragment;
 
