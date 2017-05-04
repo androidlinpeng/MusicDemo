@@ -19,6 +19,13 @@
         <attr name="overlayColor" format="color" />
     </declare-styleable>
 
+    <string-array name="local_music_dialog">
+        <item>歌手信息</item>
+        <item>歌曲信息</item>
+        <item>设置铃声</item>
+        <item>删除</item>
+    </string-array>
+
     <string-array name="online_music_dialog">
         <item>歌手信息</item>
         <item>下载</item>

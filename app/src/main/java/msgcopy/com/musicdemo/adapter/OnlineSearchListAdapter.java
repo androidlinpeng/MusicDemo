@@ -22,8 +22,12 @@ import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
 
+/**
+ * Created by liang on 2017/4/21.
+ */
 
-public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class OnlineSearchListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
 
     public int currentlyPlayingPosition;
     private List<Song> arraylist;
@@ -33,16 +37,7 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private float topPlayScore;
     private String action;
 
-    public interface OnMoreClickListener {
-        void onMoreClick(int position);
-    }
-    public OnMoreClickListener moreClickListener;
-
-    public OnMoreClickListener setOnMoreClickListener(OnMoreClickListener Listener) {
-        return moreClickListener = Listener;
-    }
-
-    public SongsListAdapter(AppCompatActivity context, List<Song> arraylist, String action, boolean withHeader) {
+    public OnlineSearchListAdapter(AppCompatActivity context, List<Song> arraylist, String action, boolean withHeader) {
         if (arraylist == null) {
             this.arraylist = new ArrayList<>();
         } else {
@@ -69,11 +64,11 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         RecyclerView.ViewHolder viewHolder = null;
         switch (viewType) {
             case Type.TYPE_PLAY_SHUFFLE:
-                View playShuffle = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_play_shuffle, viewGroup, false);
+                View playShuffle = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_search_clauses, viewGroup, false);
                 viewHolder = new PlayShuffleViewHoler(playShuffle);
                 break;
             case Type.TYPE_SONG:
-                View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_list_linear_layout_item, viewGroup, false);
+                View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_list_search_layout_item, viewGroup, false);
                 viewHolder = new ItemHolder(v);
                 break;
         }
@@ -81,7 +76,7 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
         switch (viewType) {
             case Type.TYPE_PLAY_SHUFFLE:
@@ -110,13 +105,6 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     itemHolder.playscore.setVisibility(View.VISIBLE);
                     RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) itemHolder.playscore.getLayoutParams();
                 }
-
-                itemHolder.popupMenu.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        moreClickListener.onMoreClick(position-1);
-                    }
-                });
 
                 break;
         }
@@ -210,5 +198,4 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }, 100);
         }
     }
-
 }

@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
+import android.media.audiofx.AudioEffect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -19,7 +21,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,6 +49,7 @@ import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
 import msgcopy.com.musicdemo.utils.PreferencesUtility;
+import msgcopy.com.musicdemo.utils.ToastUtils;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -305,22 +307,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if (mPreferences.getStartMusicMode().equals(Constants.LOCAL_MUSIC)) {
             mToolbar.setTitle(R.string.str_home);
             mCurrentFragment = ViewUtils.createFragment(MainFragment.class, true);
+            mNavigationView.getMenu().getItem(0).setChecked(true);
         }else {
             mToolbar.setTitle(R.string.str_music_hall);
             mCurrentFragment = ViewUtils.createFragment(MusicHallFragment.class, true);
+            mNavigationView.getMenu().getItem(1).setChecked(true);
         }
         mFragmentManager.beginTransaction().add(R.id.frame_content, mCurrentFragment).commit();
-        mNavigationView.getMenu().getItem(0).setChecked(true);
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 
     @Override
@@ -335,6 +328,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         switch (item.getItemId()) {
             case R.id.action_settings:
 
+                break;
+            case R.id.action_balancer:
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                final Intent effects = new Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL);
+                effects.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
+                this.startActivityForResult(effects, 666);
                 break;
             case R.id.action_search:
                 mToolbar.setTitle(R.string.str_search);
@@ -371,11 +370,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mToolbar.setTitle(R.string.str_settings);
         } else if (id == R.id.nav_drop_out) {
             mToolbar.setTitle(R.string.str_drop_out);
-            stopService(new Intent(MainActivity.this, MusicService.class));
-            finish();
+            finishMain();
         }
         item.setChecked(true);
-//        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -460,13 +457,20 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         RxBus.getInstance().addSubscription(this, subscription);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    private void finishMain(){
         RxBus.getInstance().unSubscribe(this);
         if (myServiceConnection != null) {
             unbindService(myServiceConnection);
         }
+        if (mainReceiver!=null){
+            unregisterReceiver(mainReceiver);
+        }
+        finish();
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     private void updatePausePlay(boolean isPlaying) {
@@ -482,32 +486,33 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+            if (this.mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                this.mDrawerLayout.closeDrawer(GravityCompat.START);
+            }
             switch (keyBackClickCount++) {
                 case 0:
+                    ToastUtils.showLong(this,R.string.str_press_again_to_exit);
                     mToolbar.setVisibility(View.VISIBLE);
                     getSupportFragmentManager().popBackStack();
-//                    ToastUtils.showShort(this, R.string.str_press_again_to_exit);
                     Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
                             keyBackClickCount = 0;
                         }
-                    }, 500);
+                    }, 1000);
                     break;
                 case 1:
-                    finish();
-                    break;
+                    Intent home = new Intent(Intent.ACTION_MAIN);
+                    home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    home.addCategory(Intent.CATEGORY_HOME);
+                    startActivity(home);
+                    return true;
                 default:
                     break;
             }
             return true;
-        } else if (keyCode == KeyEvent.KEYCODE_MENU) {
-            if (this.mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
-                this.mDrawerLayout.closeDrawer(Gravity.START);
-            } else {
-                this.mDrawerLayout.openDrawer(Gravity.LEFT);
-            }
         }
         return super.onKeyDown(keyCode, event);
     }

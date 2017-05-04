@@ -78,6 +78,17 @@ public abstract class DownloadOnlineMusic extends DownloadMusic {
             new HttpUser().getSongLry(subscriberSongLry, songListBean.getSong_id());
         }
 
+        // 下载封面
+        String albumFileName = FileUtils.getAlbumFileName(artist, title);
+        File albumFile = new File(FileUtils.getAlbumDir(), albumFileName);
+        String picUrl = songListBean.getPic_big();
+        if (TextUtils.isEmpty(picUrl)) {
+            picUrl = songListBean.getPic_small();
+        }
+        if (!albumFile.exists() && !TextUtils.isEmpty(picUrl)) {
+
+        }
+
     }
 }
 

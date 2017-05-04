@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
+import android.media.audiofx.AudioEffect;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,7 +46,7 @@ import static msgcopy.com.musicdemo.Constants.NOTIC_CANCEL;
 /**
  * Created by liang on 2017/2/13.
  */
-public class MusicService extends Service {
+public class MusicService extends Service{
 
     private static final String TAG = "MusicService";
 
@@ -75,7 +76,7 @@ public class MusicService extends Service {
 
     private long songID;
 
-    private List<Song> mlist = null;
+    public List<Song> mlist = null;
 
     private int mPlayPosition;
 
@@ -136,6 +137,7 @@ public class MusicService extends Service {
                 mediaPlayer.setDataSource(song.path);
                 mediaPlayer.prepare(); // 进行缓冲
                 mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
+                mediaPlayer.setOnCompletionListener(new MyCompletionListener());
                 mediaTime = mediaPlayer.getDuration();
                 handler.sendEmptyMessage(1);
                 MsgCache.get().put(MUSIC_INFO, song);
@@ -143,6 +145,10 @@ public class MusicService extends Service {
             } else {
                 getHttp(song.id, song);
             }
+            final Intent intent = new Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION);
+            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
+            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
+            sendBroadcast(intent);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -152,6 +158,10 @@ public class MusicService extends Service {
         if (mediaPlayer.isPlaying() && mediaPlayer != null) {
             mediaPlayer.pause();
             isPlaying = false;
+            final Intent intent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
+            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
+            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
+            sendBroadcast(intent);
         } else if (isPreparing && mediaPlayer != null){
             mediaPlayer.start();
             isPlaying = true;
@@ -218,9 +228,9 @@ public class MusicService extends Service {
                         try {
                             currentTime = mediaPlayer.getCurrentPosition(); // 获取当前音乐播放的位置
                             if (currentTime>=mediaTime){
-                                next();
+                            }else {
+                                handler.sendEmptyMessageDelayed(1, 100);
                             }
-                            handler.sendEmptyMessageDelayed(1, 500);
                             PlayState playState = new PlayState(currentMusicPath, currentTime, mediaTime, isPlaying, false);
                             RxBus.getInstance().post(playState);
                         } catch (Exception e) {
@@ -325,12 +335,25 @@ public class MusicService extends Service {
         }
         unregisterReceiver(this.myReceiver);
         MyApplication.getInstance().setMusicService(null);
+        final Intent audioEffectsIntent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
+        audioEffectsIntent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
+        audioEffectsIntent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
+        sendBroadcast(audioEffectsIntent);
     }
 
+    private class MyCompletionListener implements MediaPlayer.OnCompletionListener{
+
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            LogUtil.i(TAG,"onCompletion");
+            next();
+        }
+    }
     private class PreparedListener implements MediaPlayer.OnPreparedListener {
 
         @Override
         public void onPrepared(MediaPlayer mp) {
+            LogUtil.i(TAG,"onPrepared");
             mp.start(); // 开始播放
             if (mediaPlayer.isPlaying()) {
                 isPlaying = true;
@@ -417,7 +440,7 @@ public class MusicService extends Service {
                         if (state == 1) {//插入耳机
 
                         } else if (state == 0) {//拔出耳机
-                            sendService(2);
+                            play();
                         }
                     }
                 }

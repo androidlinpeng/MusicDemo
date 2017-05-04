@@ -44,7 +44,6 @@ import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.FileUtils;
-import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.view.BlurringView;
 import rx.Subscriber;
 import rx.Subscription;
@@ -52,7 +51,6 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-import static android.R.attr.path;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_CIRCULATION;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_RANDOM;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_SINGLE;
@@ -338,7 +336,6 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
                         artist.setText(musicArtist);
                         initView();
                         getSongSearch();
-                        LogUtil.i(TAG,"musicPath"+musicPath+"-----------------"+path);
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -509,7 +506,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
         if (isPlaying) {
             this.play.setImageResource(R.drawable.play_btn_pause_selector);
         } else {
-            this.play.setImageResource(R.drawable.play_btn_play_pause_selector);
+            this.play.setImageResource(R.drawable.play_btn_play_selector);
         }
     }
 
@@ -541,7 +538,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
         pattern = MusicPlayer.getPlayerPattern();
         switch (v.getId()) {
             case R.id.last:
-                this.play.setImageResource(R.drawable.ic_play_white_36dp);
+                this.play.setImageResource(R.drawable.play_btn_play_selector);
                 MyApplication.getInstance().getMusicService().last();
                 break;
             case R.id.play:
@@ -556,7 +553,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
                 updatePausePlay(isPlaying);
                 break;
             case R.id.next:
-                this.play.setImageResource(R.drawable.ic_play_white_36dp);
+                this.play.setImageResource(R.drawable.play_btn_play_selector);
                 MyApplication.getInstance().getMusicService().next();
                 break;
             case R.id.player_pattern:

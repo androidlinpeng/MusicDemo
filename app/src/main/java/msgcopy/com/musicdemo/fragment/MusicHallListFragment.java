@@ -47,7 +47,7 @@ public class MusicHallListFragment extends BaseFragment implements MusicHallList
     List<NewSong.SongListBean> song_list;
     private String type = "";
 
-    private int loadingNumber = 10;
+    private int loadingNumber = 15;
 
     @Override
     protected int setLayoutResourceID() {

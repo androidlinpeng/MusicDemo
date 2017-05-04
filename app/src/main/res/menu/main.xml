@@ -7,6 +7,11 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_balancer"
+        android:orderInCategory="110"
+        android:title="@string/action_balancer"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_search"
         android:orderInCategory="1"
         android:icon="@drawable/ic_action_search"

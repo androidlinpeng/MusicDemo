@@ -14,6 +14,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import msgcopy.com.musicdemo.Constants;
 import msgcopy.com.musicdemo.MsgCache;
+import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.RxBus;
 import msgcopy.com.musicdemo.modul.PlayState;
@@ -79,7 +80,6 @@ public class LockScreenActivity extends SwipeBackActivity {
         subscribeChangedSong();
         subscribePlayState();
 
-//        swipeGestures();
     }
 
     private void initView(Song song) {
@@ -133,12 +133,12 @@ public class LockScreenActivity extends SwipeBackActivity {
             case R.id.lock_screen_last:
                 if (!CommonUtil.isBlank(currentsong)) {
                     this.lockscreenplay.setImageResource(R.drawable.ic_play_white_36dp);
-                    sendService(1);
+                    MyApplication.getInstance().getMusicService().last();
                 }
                 break;
             case R.id.lock_screen_play:
                 if (!CommonUtil.isBlank(currentsong)) {
-                    sendService(2);
+                    MyApplication.getInstance().getMusicService().play();
                     if (!CommonUtil.isBlank(currentsong.path)) {
                         if (isPlaying) {
                             isPlaying = false;
@@ -152,7 +152,7 @@ public class LockScreenActivity extends SwipeBackActivity {
             case R.id.lock_screen_next:
                 if (!CommonUtil.isBlank(currentsong)) {
                     this.lockscreenplay.setImageResource(R.drawable.ic_play_white_36dp);
-                    sendService(3);
+                    MyApplication.getInstance().getMusicService().next();
                 }
                 break;
         }

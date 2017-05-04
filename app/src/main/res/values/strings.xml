@@ -3,7 +3,7 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">设置</string>
     <string name="str_home">本地音乐</string>
     <string name="str_music_hall">音乐馆</string>
     <string name="str_search">搜索</string>
@@ -11,18 +11,24 @@
     <string name="str_collect">我的收藏</string>
     <string name="str_settings">设置</string>
     <string name="str_drop_out">退出</string>
+    <string name="action_balancer">平衡器</string>
 
     <string name="songs">歌曲</string>
     <string name="albums">专辑</string>
     <string name="artists">歌手</string>
     <string name="str_local_songs">搜索歌曲</string>
-    <string name="str_press_again_to_exit">再按一次退出</string>
+    <string name="str_press_again_to_exit">再次点击返回键切换到桌面</string>
     <string name="search_library">本地搜索</string>
     <string name="str_search_lyrics">搜索歌词中...</string>
 
     <string name="play_shuffle">随机播放</string>
     <string name="content_empty_default">空空如也</string>
     <string name="unknown">未知</string>
+    <string name="delete_music">删除%s？</string>
+    <string name="delete">删除</string>
+    <string name="confirm">确定</string>
+    <string name="cancel">取消</string>
+    <string name="setting_ringtone_success">设置铃声成功</string>
 
     <string name="count_song"><xliff:g id="count">%d</xliff:g> 首歌</string>
     <string name="count_songs"><xliff:g id="count">%d</xliff:g> 首歌</string>

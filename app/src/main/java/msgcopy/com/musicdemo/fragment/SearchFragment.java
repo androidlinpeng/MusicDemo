@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
@@ -17,17 +18,22 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import msgcopy.com.musicdemo.Constants;
+import msgcopy.com.musicdemo.HttpUser;
 import msgcopy.com.musicdemo.MainActivity;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.adapter.SearchListAdapter;
 import msgcopy.com.musicdemo.dataloader.SongLoader;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.modul.online.SongSearch;
+import msgcopy.com.musicdemo.utils.PreferencesUtility;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -36,11 +42,12 @@ import rx.schedulers.Schedulers;
  * Created by liang on 2017/4/21.
  */
 
-public class SearchFragment extends BaseFragment implements SearchView.OnQueryTextListener, View.OnTouchListener{
+public class SearchFragment extends BaseFragment implements SearchView.OnQueryTextListener, View.OnTouchListener {
 
+    private static final String TAG = "SearchFragment";
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
-//    @BindView(R.id.toolbar)
+    //    @BindView(R.id.toolbar)
 //    Toolbar mToolbar;
     @BindView(R.id.input)
     EditText input;
@@ -58,6 +65,8 @@ public class SearchFragment extends BaseFragment implements SearchView.OnQueryTe
     private String queryString;
     private InputMethodManager mImm;
 
+    private PreferencesUtility mPreferences;
+
     @Override
     protected int setLayoutResourceID() {
         return R.layout.fragment_search;
@@ -67,6 +76,7 @@ public class SearchFragment extends BaseFragment implements SearchView.OnQueryTe
     protected void setUpView(View view) {
         super.setUpView(view);
         ButterKnife.bind(this, view);
+        mPreferences = PreferencesUtility.getInstance(getActivity());
 
         mAdapter = new SearchListAdapter((AppCompatActivity) getActivity(), null, action, true);
         linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -83,19 +93,60 @@ public class SearchFragment extends BaseFragment implements SearchView.OnQueryTe
 
     }
 
-    @OnClick({R.id.search,R.id.back})
+    @OnClick({R.id.search, R.id.back})
     public void onClick(ImageView view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.search:
-                String string = input.getText().toString();
-                updataMedia(string);
+                String query = input.getText().toString();
+                if (mPreferences.getStartMusicMode().equals(Constants.LOCAL_MUSIC)) {
+                    updataMedia(query);
+                } else {
+                    getSongSearch(query);
+                }
+
                 break;
             case R.id.back:
-                ((AppCompatActivity)getActivity()).getSupportFragmentManager().popBackStack();
+                ((AppCompatActivity) getActivity()).getSupportFragmentManager().popBackStack();
                 MainActivity.mToolbar.setVisibility(View.VISIBLE);
                 break;
         }
 
+    }
+
+    public void getSongSearch(String query) {
+        Subscriber<SongSearch> subscriberSearch = new Subscriber<SongSearch>() {
+            @Override
+            public void onCompleted() {
+                Log.i(TAG, "onCompleted:");
+            }
+
+            @Override
+            public void onError(Throwable onError) {
+                Log.i(TAG, "onError:" + onError.getMessage());
+                recyclerView.setVisibility(View.GONE);
+                view_empty.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onNext(SongSearch songSearch) {
+                Log.i(TAG, "onNext:");
+                if (songSearch.getSong().size() > 0) {
+                    List<Song> songs = new ArrayList<Song>();
+                    for (int i = 0; i < songSearch.getSong().size(); i++) {
+                        Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songSearch.getSong().get(i).getSongid()), -1, -1, songSearch.getSong().get(i).getSongname(), songSearch.getSong().get(i).getArtistname(), "", -1, -1);
+                        songs.add(song);
+                    }
+                    mAdapter.setSongList(songs);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    view_empty.setVisibility(View.GONE);
+                } else {
+                    recyclerView.setVisibility(View.GONE);
+                    view_empty.setVisibility(View.VISIBLE);
+                }
+
+            }
+        };
+        new HttpUser().getSongSearch(subscriberSearch, query);
     }
 
     private void updataMedia(String string) {

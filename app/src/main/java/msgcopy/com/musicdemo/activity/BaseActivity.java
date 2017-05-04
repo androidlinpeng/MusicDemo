@@ -36,7 +36,7 @@ public class BaseActivity extends AppCompatActivity {
     public void startActivity(Intent intent, boolean anim){
         super.startActivity(intent);
         if (anim){
-            overridePendingTransition(R.anim.push_left_in, R.anim.nothing);
+//            overridePendingTransition(R.anim.push_left_in, R.anim.nothing);
         }
     }
 
@@ -48,7 +48,7 @@ public class BaseActivity extends AppCompatActivity {
     public void startActivityForResult(Intent intent, int requestCode, boolean anim) {
         super.startActivityForResult(intent, requestCode);
         if (anim){
-            overridePendingTransition(R.anim.push_left_in, R.anim.nothing);
+//            overridePendingTransition(R.anim.push_left_in, R.anim.nothing);
         }
     }
 

@@ -41,12 +41,21 @@ public class FileUtils {
         return mkdirs(dir);
     }
 
+    public static String getAlbumDir() {
+        String dir = getAppDir() + "/Album/";
+        return mkdirs(dir);
+    }
+
     private static String mkdirs(String dir) {
         File file = new File(dir);
         if (!file.exists()) {
             file.mkdirs();
         }
         return dir;
+    }
+
+    public static String getAlbumFileName(String artist, String title) {
+        return getFileName(artist, title);
     }
 
     public static String getMp3FileName(String artist, String title) {
