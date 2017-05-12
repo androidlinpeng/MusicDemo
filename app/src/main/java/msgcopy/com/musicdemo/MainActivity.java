@@ -1,6 +1,5 @@
 package msgcopy.com.musicdemo;
 
-import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,24 +20,27 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import java.io.File;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import me.wcy.lrcview.LrcView;
 import msgcopy.com.musicdemo.activity.BaseActivity;
 import msgcopy.com.musicdemo.fragment.MainFragment;
 import msgcopy.com.musicdemo.fragment.MusicHallFragment;
@@ -47,7 +49,9 @@ import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
 import msgcopy.com.musicdemo.utils.CommonUtil;
+import msgcopy.com.musicdemo.utils.FileUtils;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
+import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.utils.PreferencesUtility;
 import msgcopy.com.musicdemo.utils.ToastUtils;
 import msgcopy.com.musicdemo.utils.ViewUtils;
@@ -58,7 +62,7 @@ import rx.schedulers.Schedulers;
 
 import static msgcopy.com.musicdemo.R.id.toolbar;
 
-public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "MainActivity";
     private FragmentManager mFragmentManager;
     public static Fragment mCurrentFragment;
@@ -85,15 +89,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     public final static int REQUEST_REG = 1;
 
-    private RemoteViews contentView;
-
-    private Notification notification;
-
     private MainBroadcastReceiver mainReceiver;
 
     private ServiceConnection myServiceConnection;
 
     private PreferencesUtility mPreferences;
+
+    private LrcView lrcView;
+    private WindowManager windowM;
+    private WindowManager.LayoutParams layoutParams;
 
     private class MainBroadcastReceiver extends BroadcastReceiver {
 
@@ -187,12 +191,75 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (windowM!=null) {
+            windowM.removeView(lrcView);
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_UP:
+                //getRawX/Y 是获取相对于Device的坐标位置 注意区别getX/Y[相对于View]
+                layoutParams.x = (int) event.getRawX();
+                layoutParams.y = (int) event.getRawY();
+                //更新"桌面歌词"的位置
+                windowM.updateViewLayout(lrcView, layoutParams);
+                //下面的removeView 可以去掉"桌面歌词"
+                //wm.removeView(myView);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                layoutParams.x = (int) event.getRawX();
+                layoutParams.y = (int) event.getRawY();
+                windowM.updateViewLayout(lrcView, layoutParams);
+                break;
+        }
+        return false;
+    }
+
+    private void desktopShowView() {
+        windowM = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        layoutParams = new WindowManager.LayoutParams();
+//        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+//        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        layoutParams.width = 1200;
+        layoutParams.height = 200;
+        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+        lrcView = new LrcView(this);
+        lrcView.setMinimumHeight(100);
+        windowM.addView(lrcView, layoutParams);
+        lrcView.setOnClickListener(this);
+
+        if (!CommonUtil.isBlank(currentsong)) {
+            loadLrc("");
+//            setLrcLabel("搜索歌词中...");
+            if (FileUtils.fileIsExists(currentsong.artistName, currentsong.title)) {
+                String filePath = FileUtils.getLrcDir() + FileUtils.getLrcFileName(currentsong.artistName, currentsong.title);
+                LogUtil.i("filePath",""+filePath);
+                loadLrc(filePath);
+            }
+        }
+    }
+
+    private void loadLrc(String path) {
+        File file = new File(path);
+        lrcView.loadLrc(file);
+    }
+    private void setLrcLabel(String label) {
+        lrcView.setLabel(label);
+    }
+
     private void binPlayService() {
         if (MyApplication.getInstance().getMusicService() == null) {
             Intent intent = new Intent();
-            intent.setClass(this,MusicService.class);
+            intent.setClass(this, MusicService.class);
             myServiceConnection = new PlayServiceConnection();
-            bindService(intent,myServiceConnection,Context.BIND_AUTO_CREATE);
+            bindService(intent, myServiceConnection, Context.BIND_AUTO_CREATE);
         }
     }
 
@@ -200,7 +267,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            MusicService musicService =  ((MusicService.MyBinder) iBinder).getService();
+            MusicService musicService = ((MusicService.MyBinder) iBinder).getService();
             MyApplication.getInstance().setMusicService(musicService);
             try {
                 List<Song> mlist = (List<Song>) MsgCache.get().getAsObject(Constants.MUSIC_LIST);
@@ -249,10 +316,29 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         text_song_title = (TextView) findViewById(R.id.text_song_title);
         text_song_artist = (TextView) findViewById(R.id.text_song_artist);
         this.mediaProgress = (SeekBar) findViewById(R.id.seek_song_touch);
+        this.mediaProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    lrcView.updateTime(progress);
+                }
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         this.mediaProgress.setMax(1000);
         //清除默认的左右边距
-        mediaProgress.setPadding(0, 0, 0, 0);
-//        mediaProgress.setSecondaryProgress(mediaProgress.getMax());
+        this.mediaProgress.setPadding(0, 0, 0, 0);
+        // mediaProgress.setSecondaryProgress(mediaProgress.getMax());
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -308,7 +394,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mToolbar.setTitle(R.string.str_home);
             mCurrentFragment = ViewUtils.createFragment(MainFragment.class, true);
             mNavigationView.getMenu().getItem(0).setChecked(true);
-        }else {
+        } else {
             mToolbar.setTitle(R.string.str_music_hall);
             mCurrentFragment = ViewUtils.createFragment(MusicHallFragment.class, true);
             mNavigationView.getMenu().getItem(1).setChecked(true);
@@ -330,7 +416,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 break;
             case R.id.action_balancer:
-                MediaPlayer mediaPlayer = new MediaPlayer();
+                MediaPlayer mediaPlayer = MyApplication.getInstance().getMusicService().mediaPlayer;
                 final Intent effects = new Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL);
                 effects.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
                 this.startActivityForResult(effects, 666);
@@ -409,7 +495,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                                     .placeholder(R.drawable.icon_album_default)
                                     .centerCrop()
                                     .into(imag_albumArt);
-                        }else {
+                        } else {
                             Glide.with(getApplication()).load(ListenerUtil.getAlbumArtUri(song.albumId).toString())
                                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                                     .placeholder(R.drawable.icon_album_default)
@@ -446,6 +532,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                                 mediaProgress.setProgress((int) pos);
                                 isPlaying = playState.isPlaying();
                                 updatePausePlay(isPlaying);
+                                lrcView.updateTime(position);
+                                LogUtil.i("PlayState","------------------");
                             }
                         }
                     }
@@ -457,16 +545,18 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         RxBus.getInstance().addSubscription(this, subscription);
     }
 
-    private void finishMain(){
+    private void finishMain() {
         RxBus.getInstance().unSubscribe(this);
         if (myServiceConnection != null) {
             unbindService(myServiceConnection);
         }
-        if (mainReceiver!=null){
+        if (mainReceiver != null) {
             unregisterReceiver(mainReceiver);
         }
         finish();
-    };
+    }
+
+    ;
 
     @Override
     protected void onDestroy() {
@@ -492,7 +582,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
             switch (keyBackClickCount++) {
                 case 0:
-                    ToastUtils.showLong(this,R.string.str_press_again_to_exit);
+                    ToastUtils.showLong(this, R.string.str_press_again_to_exit);
                     mToolbar.setVisibility(View.VISIBLE);
                     getSupportFragmentManager().popBackStack();
                     Timer timer = new Timer();
@@ -508,6 +598,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     home.addCategory(Intent.CATEGORY_HOME);
                     startActivity(home);
+                    desktopShowView();
                     return true;
                 default:
                     break;

@@ -1,5 +1,5 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">MusicDemo</string>
+    <string name="app_name">妹子专属</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -11,7 +11,7 @@
     <string name="str_collect">我的收藏</string>
     <string name="str_settings">设置</string>
     <string name="str_drop_out">退出</string>
-    <string name="action_balancer">平衡器</string>
+    <string name="action_balancer">均衡器</string>
 
     <string name="songs">歌曲</string>
     <string name="albums">专辑</string>

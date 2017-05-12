@@ -102,7 +102,6 @@ public class SongsFragment extends BaseFragment implements SongsListAdapter.OnMo
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.addItemDecoration(new ItemListDivider(getActivity()));
         recyclerView.setAdapter(mAdapter);
-
         mAdapter.setOnMoreClickListener(this);
 
         updataMedia();

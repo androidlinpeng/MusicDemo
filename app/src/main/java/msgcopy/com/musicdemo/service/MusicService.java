@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
-import android.media.audiofx.AudioEffect;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,7 +57,7 @@ public class MusicService extends Service{
 
     private MyReceiver myReceiver;  //自定义广播接收器
 
-    private MediaPlayer mediaPlayer;
+    public MediaPlayer mediaPlayer;
 
     private String currentMusicPath = "";
 
@@ -145,10 +144,10 @@ public class MusicService extends Service{
             } else {
                 getHttp(song.id, song);
             }
-            final Intent intent = new Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION);
-            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
-            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
-            sendBroadcast(intent);
+//            final Intent intent = new Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION);
+//            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
+//            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
+//            sendBroadcast(intent);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -158,10 +157,10 @@ public class MusicService extends Service{
         if (mediaPlayer.isPlaying() && mediaPlayer != null) {
             mediaPlayer.pause();
             isPlaying = false;
-            final Intent intent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
-            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
-            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
-            sendBroadcast(intent);
+//            final Intent intent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
+//            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
+//            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
+//            sendBroadcast(intent);
         } else if (isPreparing && mediaPlayer != null){
             mediaPlayer.start();
             isPlaying = true;
@@ -335,10 +334,10 @@ public class MusicService extends Service{
         }
         unregisterReceiver(this.myReceiver);
         MyApplication.getInstance().setMusicService(null);
-        final Intent audioEffectsIntent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
-        audioEffectsIntent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
-        audioEffectsIntent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
-        sendBroadcast(audioEffectsIntent);
+//        final Intent audioEffectsIntent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
+//        audioEffectsIntent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
+//        audioEffectsIntent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
+//        sendBroadcast(audioEffectsIntent);
     }
 
     private class MyCompletionListener implements MediaPlayer.OnCompletionListener{
