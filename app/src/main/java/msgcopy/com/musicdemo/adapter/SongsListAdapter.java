@@ -20,7 +20,9 @@ import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.modul.Song;
+import msgcopy.com.musicdemo.utils.FileUtils;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
+import msgcopy.com.musicdemo.utils.LogUtil;
 
 
 public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -100,11 +102,24 @@ public class SongsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 itemHolder.artist.setText(localItem.artistName);
                 itemHolder.album.setText(localItem.albumName);
 
-                Glide.with(holder.itemView.getContext()).load(ListenerUtil.getAlbumArtUri(localItem.albumId).toString())
-                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                        .placeholder(R.drawable.icon_album_default)
-                        .centerCrop()
-                        .into(itemHolder.albumArt);
+                if (ListenerUtil.getAlbumArtUri(localItem.albumId).toString()!=null) {
+                    LogUtil.i("filePath1",localItem.artistName+"----"+ListenerUtil.getAlbumArtUri(localItem.albumId).toString());
+                    Glide.with(holder.itemView.getContext()).load(ListenerUtil.getAlbumArtUri(localItem.albumId).toString())
+                            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                            .placeholder(R.drawable.icon_album_default)
+                            .centerCrop()
+                            .into(itemHolder.albumArt);
+                }
+
+                if (FileUtils.fileIsExistsAlbumPic(localItem.artistName, localItem.title)) {
+                    String filePath = FileUtils.getAlbumDir() + FileUtils.getAlbumFileName(localItem.artistName, localItem.title);
+                    LogUtil.i("filePath2",localItem.artistName+"----"+filePath);
+                    Glide.with(holder.itemView.getContext()).load(filePath)
+                            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                            .placeholder(R.drawable.icon_album_default)
+                            .centerCrop()
+                            .into(itemHolder.albumArt);
+                }
 
                 if (topPlayScore != -1) {
                     itemHolder.playscore.setVisibility(View.VISIBLE);

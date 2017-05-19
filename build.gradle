@@ -6,6 +6,7 @@ buildscript {
             url "http://dl.bintray.com/populov/maven"
         }
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0'
@@ -22,6 +23,7 @@ allprojects {
             url "http://dl.bintray.com/populov/maven"
         }
         jcenter()
+        mavenCentral()
     }
 }
 

@@ -169,7 +169,7 @@ public class NewSong implements Serializable{
         }
     }
 
-    public static class SongListBean {
+    public static class SongListBean  implements Serializable{
         /**
          * artist_id : 88
          * language : 国语

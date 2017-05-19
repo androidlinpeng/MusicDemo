@@ -6,8 +6,10 @@ import msgcopy.com.musicdemo.modul.SongList;
 import msgcopy.com.musicdemo.modul.Songurl;
 import msgcopy.com.musicdemo.modul.online.SongLry;
 import msgcopy.com.musicdemo.modul.online.SongSearch;
+import okhttp3.ResponseBody;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
+import retrofit2.http.Url;
 import rx.Observable;
 
 /**
@@ -15,6 +17,9 @@ import rx.Observable;
  */
 
 public interface UserService {
+
+    @GET
+    Observable<ResponseBody> downloadPicFromNet(@Url String fileUrl);
 
     @GET(APIUrl.path_song_url)
     Observable<Songurl> getSongPath(@Query("songid") String songid);

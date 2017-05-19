@@ -24,7 +24,8 @@ import java.util.Random;
 
 import msgcopy.com.musicdemo.Constants;
 import msgcopy.com.musicdemo.HttpUser;
-import msgcopy.com.musicdemo.MsgCache;
+import msgcopy.com.musicdemo.OnPlayerListener;
+import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
@@ -45,7 +46,7 @@ import static msgcopy.com.musicdemo.Constants.NOTIC_CANCEL;
 /**
  * Created by liang on 2017/2/13.
  */
-public class MusicService extends Service{
+public class MusicService extends Service {
 
     private static final String TAG = "MusicService";
 
@@ -78,6 +79,12 @@ public class MusicService extends Service{
     public List<Song> mlist = null;
 
     private int mPlayPosition;
+
+    private OnPlayerListener mListener;
+
+    public void setOnPlayerListener(OnPlayerListener listener) {
+        mListener = listener;
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -129,14 +136,12 @@ public class MusicService extends Service{
             mPlayPosition = position;
             if (song.type.equals(Constants.LOCAL_MUSIC)) {
                 RxBus.getInstance().post(song);
-                isPreparing =true;
+                isPreparing = true;
                 PreferencesUtility.getInstance(MyApplication.getInstance()).setPlaySongID(song.id);
                 currentMusicPath = song.path;
                 mediaPlayer.reset();// 把各项参数恢复到初始状态
                 mediaPlayer.setDataSource(song.path);
                 mediaPlayer.prepare(); // 进行缓冲
-                mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
-                mediaPlayer.setOnCompletionListener(new MyCompletionListener());
                 mediaTime = mediaPlayer.getDuration();
                 handler.sendEmptyMessage(1);
                 MsgCache.get().put(MUSIC_INFO, song);
@@ -144,10 +149,7 @@ public class MusicService extends Service{
             } else {
                 getHttp(song.id, song);
             }
-//            final Intent intent = new Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION);
-//            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
-//            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
-//            sendBroadcast(intent);
+            mListener.OnChangedSong(song);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -157,18 +159,15 @@ public class MusicService extends Service{
         if (mediaPlayer.isPlaying() && mediaPlayer != null) {
             mediaPlayer.pause();
             isPlaying = false;
-//            final Intent intent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
-//            intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
-//            intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
-//            sendBroadcast(intent);
-        } else if (isPreparing && mediaPlayer != null){
+//            handler.removeCallbacksAndMessages(null);
+        } else if (isPreparing && mediaPlayer != null) {
             mediaPlayer.start();
             isPlaying = true;
-        }else {
+            handler.sendEmptyMessage(1);
+        } else {
             mPlayPosition = updatePlayingPosition();
-            play(mlist.get(mPlayPosition),mPlayPosition);
+            play(mlist.get(mPlayPosition), mPlayPosition);
         }
-        handler.sendEmptyMessage(1);
         initNotificationBar();
     }
 
@@ -206,14 +205,16 @@ public class MusicService extends Service{
     public int updatePlayingPosition() {
         int position = 0;
         long id = PreferencesUtility.getInstance(MyApplication.getInstance()).getPlaySongID();
-        for (int i = 0; i < mlist.size(); i++) {
-            if (mlist.get(i).id == id) {
-                position = i;
-                break;
+        if (mlist != null && mlist.size() > 0) {
+            for (int i = 0; i < mlist.size(); i++) {
+                if (mlist.get(i).id == id) {
+                    position = i;
+                    break;
+                }
             }
+            mPlayPosition = position;
+            PreferencesUtility.getInstance(MyApplication.getInstance()).setPlaySongID(mlist.get(mPlayPosition).id);
         }
-        mPlayPosition = position;
-        PreferencesUtility.getInstance(MyApplication.getInstance()).setPlaySongID(mlist.get(mPlayPosition).id);
         return mPlayPosition;
     }
 
@@ -226,12 +227,10 @@ public class MusicService extends Service{
                     if (mediaPlayer != null) {
                         try {
                             currentTime = mediaPlayer.getCurrentPosition(); // 获取当前音乐播放的位置
-                            if (currentTime>=mediaTime){
-                            }else {
-                                handler.sendEmptyMessageDelayed(1, 100);
-                            }
+                            handler.sendEmptyMessageDelayed(1, 1000);
                             PlayState playState = new PlayState(currentMusicPath, currentTime, mediaTime, isPlaying, false);
                             RxBus.getInstance().post(playState);
+                            mListener.onChengedProgress(playState);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -254,12 +253,8 @@ public class MusicService extends Service{
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(this.myReceiver, filter);
 
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-
-            }
-        });
+        mediaPlayer.setOnCompletionListener(new MyCompletionListener());
+        mediaPlayer.setOnPreparedListener(new PreparedListener());
 
     }
 
@@ -291,11 +286,10 @@ public class MusicService extends Service{
                     mediaPlayer.reset();// 把各项参数恢复到初始状态
                     mediaPlayer.setDataSource(currentMusicPath);
                     mediaPlayer.prepare(); // 进行缓冲
-                    mediaPlayer.setOnPreparedListener(new PreparedListener());// 注册一个监听器
                     mediaTime = mediaPlayer.getDuration();
                     handler.sendEmptyMessage(1);
                     RxBus.getInstance().post(song);
-                    isPreparing =true;
+                    isPreparing = true;
                     PreferencesUtility.getInstance(MyApplication.getInstance()).setPlaySongID(song.id);
                     MsgCache.get().put(MUSIC_INFO, song);
                     initNotificationBar();
@@ -334,25 +328,24 @@ public class MusicService extends Service{
         }
         unregisterReceiver(this.myReceiver);
         MyApplication.getInstance().setMusicService(null);
-//        final Intent audioEffectsIntent = new Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
-//        audioEffectsIntent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, mediaPlayer.getAudioSessionId());
-//        audioEffectsIntent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, getPackageName());
-//        sendBroadcast(audioEffectsIntent);
+        handler.removeCallbacksAndMessages(null);
+
     }
 
-    private class MyCompletionListener implements MediaPlayer.OnCompletionListener{
+    private class MyCompletionListener implements MediaPlayer.OnCompletionListener {
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
-            LogUtil.i(TAG,"onCompletion");
+            LogUtil.i(TAG, "onCompletion");
             next();
         }
     }
+
     private class PreparedListener implements MediaPlayer.OnPreparedListener {
 
         @Override
         public void onPrepared(MediaPlayer mp) {
-            LogUtil.i(TAG,"onPrepared");
+            LogUtil.i(TAG, "onPrepared");
             mp.start(); // 开始播放
             if (mediaPlayer.isPlaying()) {
                 isPlaying = true;
@@ -439,7 +432,14 @@ public class MusicService extends Service{
                         if (state == 1) {//插入耳机
 
                         } else if (state == 0) {//拔出耳机
-                            play();
+                            try {
+                                Song song = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
+                                if (!CommonUtil.isBlank(song)) {
+                                    play();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }

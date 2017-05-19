@@ -22,6 +22,9 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.viewpagerindicator.CirclePageIndicator;
 
 import java.io.File;
@@ -30,7 +33,6 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 import me.wcy.lrcview.LrcView;
 import msgcopy.com.musicdemo.activity.BaseActivity;
 import msgcopy.com.musicdemo.adapter.MyViewPagerAdapter;
@@ -41,9 +43,10 @@ import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.modul.online.SongLry;
 import msgcopy.com.musicdemo.modul.online.SongSearch;
 import msgcopy.com.musicdemo.service.MusicService;
-import msgcopy.com.musicdemo.utils.BitmapUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.FileUtils;
+import msgcopy.com.musicdemo.utils.LogUtil;
+import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.view.BlurringView;
 import rx.Subscriber;
 import rx.Subscription;
@@ -55,8 +58,9 @@ import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_CIRCULATION;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_RANDOM;
 import static msgcopy.com.musicdemo.Constants.PLAYTER_PATTERN_SINGLE;
 import static msgcopy.com.musicdemo.MusicPlayer.getPlayerPattern;
+import static msgcopy.com.musicdemo.utils.BitmapUtils.createAlbumArt;
 
-public class MusicPlayerActivity extends BaseActivity implements View.OnClickListener,ViewPager.OnPageChangeListener {
+public class MusicPlayerActivity extends BaseActivity implements View.OnClickListener, ViewPager.OnPageChangeListener, OnPlayerListener {
 
     private static final String TAG = "MusicPlayerActivity";
 
@@ -94,7 +98,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
 
     private TextView curMediaTime = null;
 
-    private CircleImageView civTest;
+    private SimpleDraweeView simpleDraweeView;
 
     private ProgressBar mediaProgress = null;
 
@@ -122,7 +126,7 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
 
     private LrcView mLrcViewFull;
 
-    private CirclePageIndicator circlePageIndicator=null;
+    private CirclePageIndicator circlePageIndicator = null;
 
     private Subscriber<SongSearch> subscriberSearch;
 
@@ -133,50 +137,6 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
     private Song songPlay;
 
     private List<View> VPlist;
-
-//    private BroadcastReceiver MReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            LogUtil.i("onReceive", "onReceive");
-//            if (intent != null) {
-//                String action = intent.getAction();
-//                if (action.equals(MusicService.MUSIC_PLAYER_STATE)) {
-//                    Bundle bundle = intent.getExtras();
-//                    String path = bundle.getString("currentMusicPath");
-//                    position = bundle.getInt("currentTime");
-//                    duration = bundle.getInt("mediaTime");
-//                    isPlaying = bundle.getBoolean("isPlaying");
-//                    play.setImageResource(R.drawable.ic_pause_white_36dp);
-//
-//                    if (mediaProgress != null) {
-//                        if (duration > 0) {
-//                            long pos = 1000L * position / duration;
-//                            //显示播放进度
-//                            mediaProgress.setProgress((int) pos);
-//                        }
-//                    }
-//
-//                    if (curMediaTime != null) {
-//                        curMediaTime.setText(stringForTime(position));
-//                    }
-//                    if (mediaTime != null) {
-//                        mediaTime.setText(stringForTime(duration));
-//                    }
-//                    updatePausePlay(isPlaying);
-//                    if (!path.equals(musicPath)) {
-//                        Song infoEntity = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
-//                        musicname = infoEntity.title;
-//                        musicArtist = infoEntity.artistName;
-//                        musicPath = infoEntity.path;
-//                        songID = infoEntity.id;
-//                        music_name.setText(musicname);
-//                        artist.setText(musicArtist);
-//                        initView();
-//                    }
-//                }
-//            }
-//        }
-//    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,15 +162,10 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
         initViewPager();
         initMediaController();
         initView();
-
-//        IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction(MusicService.MUSIC_PLAYER_STATE);
-//        this.registerReceiver(this.MReceiver, intentFilter);
-
         subscribeChangedSong();
-        subscribePlayState();
-
         getSongSearch();
+        MyApplication.getInstance().getMusicService().setOnPlayerListener(this);
+
     }
 
     public void getSongSearch() {
@@ -345,62 +300,20 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
         RxBus.getInstance().addSubscription(this, subscription);
     }
 
-    private void subscribePlayState() {
-        Subscription subscription = RxBus.getInstance()
-                .toObservable(PlayState.class)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-//                .distinctUntilChanged()
-                .subscribe(new Action1<PlayState>() {
-                    @Override
-                    public void call(PlayState playState) {
-                        if (mediaProgress != null) {
-                            String path = playState.getCurrentPath();
-                            position = playState.getCurrentTime();
-                            duration = playState.getMediaTime();
-                            isPlaying = playState.isPlaying();
-                            if (mediaProgress != null) {
-                                if (duration > 0) {
-                                    long pos = 1000L * position / duration;
-                                    //显示播放进度
-                                    mediaProgress.setProgress((int) pos);
-                                    mLrcView.updateTime(position);
-                                    mLrcViewFull.updateTime(position);
-                                }
-                            }
-                            if (curMediaTime != null) {
-                                curMediaTime.setText(stringForTime(position));
-                            }
-                            if (mediaTime != null) {
-                                mediaTime.setText(stringForTime(duration));
-                            }
-                            updatePausePlay(isPlaying);
-                        }
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                    }
-                });
-        RxBus.getInstance().addSubscription(this, subscription);
-    }
-
     private void initViewPager() {
         viewPager = (ViewPager) findViewById(R.id.viewPager);
-        View coverView = LayoutInflater.from(getAppContext()).inflate(R.layout.fragment_play_centre_pager_cover,null);
-        View lrcView = LayoutInflater.from(getAppContext()).inflate(R.layout.fragment_play_centre_pager_lrc,null);
+        View coverView = LayoutInflater.from(getAppContext()).inflate(R.layout.fragment_play_centre_pager_cover, null);
+        View lrcView = LayoutInflater.from(getAppContext()).inflate(R.layout.fragment_play_centre_pager_lrc, null);
         mLrcView = (LrcView) coverView.findViewById(R.id.lrc_view);
-        civTest = (CircleImageView) coverView.findViewById(R.id.civ_test);
-        civTest.setBorderColor(R.color.transparent);
+        simpleDraweeView = (SimpleDraweeView) coverView.findViewById(R.id.civ_test);
 
         mLrcViewFull = (LrcView) lrcView.findViewById(R.id.lrc_view_full);
-        civTest.setBorderWidth(8);
         VPlist = new ArrayList<View>();
         VPlist.add(coverView);
         VPlist.add(lrcView);
         viewPager.setAdapter(new MyViewPagerAdapter(VPlist));
 
-        circlePageIndicator = (CirclePageIndicator)findViewById(R.id.circle_vpi);
+        circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_vpi);
         circlePageIndicator.setOnPageChangeListener(this);
         circlePageIndicator.setStrokeWidth(0);
         circlePageIndicator.setFillColor(getResources().getColor(R.color.white));
@@ -483,19 +396,49 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void initView() {
-        Bitmap bitmap = BitmapUtils.createAlbumArt(musicPath);
+
+        Bitmap bitmap = createAlbumArt(musicPath);
         this.bluredView = (ImageView) findViewById(R.id.blur_view);
         this.blurringView = (BlurringView) findViewById(R.id.blurring_view);
         this.blurringView.setBlurRadius(8);
         this.blurringView.setDownsampleFactor(8);
 
         if (CommonUtil.isBlank(bitmap)) {
-            this.bluredView.setImageResource(R.drawable.icon_album_dark);
-            civTest.setImageResource(R.drawable.icon_album_default);
+            if (FileUtils.fileIsExistsAlbumPic(musicArtist, musicname)) {
+                String filePath = FileUtils.getAlbumDir() + FileUtils.getAlbumFileName(musicArtist, musicname);
+                Glide.with(MusicPlayerActivity.this).load(filePath)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .placeholder(R.drawable.icon_album_default)
+                        .centerCrop()
+                        .into(simpleDraweeView);
+                Glide.with(MusicPlayerActivity.this).load(filePath)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .placeholder(R.drawable.icon_album_default)
+                        .centerCrop()
+                        .into(bluredView);
+            }else {
+                this.bluredView.setImageResource(R.drawable.icon_album_dark);
+                this.simpleDraweeView.setImageResource(R.drawable.icon_album_default);
+            }
         } else {
             this.bluredView.setImageBitmap(bitmap);
-            civTest.setImageBitmap(bitmap);
+            this.simpleDraweeView.setImageBitmap(bitmap);
         }
+
+        if (songPlay.type.equals(Constants.ONLINE_MUSIC)){
+            LogUtil.i("filePath3",""+songPlay.picsmall);
+            Glide.with(MusicPlayerActivity.this).load(songPlay.picsmall)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .placeholder(R.drawable.icon_album_default)
+                    .centerCrop()
+                    .into(simpleDraweeView);
+            Glide.with(MusicPlayerActivity.this).load(songPlay.picsmall)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .placeholder(R.drawable.icon_album_default)
+                    .centerCrop()
+                    .into(bluredView);
+        }
+
         bluredView.setBackgroundResource(R.color.transparent);
         blurringView.setBlurredView(bluredView);
         blurringView.invalidate();
@@ -650,6 +593,37 @@ public class MusicPlayerActivity extends BaseActivity implements View.OnClickLis
     public void onPageScrollStateChanged(int state) {
 
     }
+
+    @Override
+    public void OnChangedSong(Song song) {
+        LogUtil.i(TAG, "OnChangedSong-------------");
+    }
+
+    @Override
+    public void onChengedProgress(PlayState playState) {
+        LogUtil.i(TAG, "onChengedProgress-------------");
+        String path = playState.getCurrentPath();
+        position = playState.getCurrentTime();
+        duration = playState.getMediaTime();
+        isPlaying = playState.isPlaying();
+        if (mediaProgress != null) {
+            if (duration > 0) {
+                long pos = 1000L * position / duration;
+                //显示播放进度
+                mediaProgress.setProgress((int) pos);
+                mLrcView.updateTime(position);
+                mLrcViewFull.updateTime(position);
+            }
+        }
+        if (curMediaTime != null) {
+            curMediaTime.setText(stringForTime(position));
+        }
+        if (mediaTime != null) {
+            mediaTime.setText(stringForTime(duration));
+        }
+        updatePausePlay(isPlaying);
+    }
+
 
     private static class ItemListDivider extends RecyclerView.ItemDecoration {
 

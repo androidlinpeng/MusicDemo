@@ -19,7 +19,7 @@ import java.util.List;
 
 import msgcopy.com.musicdemo.Constants;
 import msgcopy.com.musicdemo.HttpUser;
-import msgcopy.com.musicdemo.MsgCache;
+import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.MusicPlayer;
 import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;

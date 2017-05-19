@@ -2,6 +2,8 @@ package msgcopy.com.musicdemo;
 
 import android.app.Application;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+
 import msgcopy.com.musicdemo.service.MusicService;
 
 /**
@@ -18,6 +20,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         myApplication = this;
+        Fresco.initialize(this);
 
     }
     public static MyApplication getInstance() {

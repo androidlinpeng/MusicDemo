@@ -32,7 +32,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import msgcopy.com.musicdemo.Constants;
-import msgcopy.com.musicdemo.MsgCache;
+import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.RxBus;

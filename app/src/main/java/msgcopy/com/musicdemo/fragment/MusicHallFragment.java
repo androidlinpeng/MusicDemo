@@ -15,6 +15,8 @@ import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.adapter.MusicHallPagerAdapter;
 import msgcopy.com.musicdemo.modul.SongList;
 import msgcopy.com.musicdemo.utils.CommonUtil;
+import msgcopy.com.musicdemo.utils.NetworkUtil;
+import msgcopy.com.musicdemo.utils.ToastUtils;
 import rx.Subscriber;
 
 /**
@@ -86,47 +88,51 @@ public class MusicHallFragment extends BaseFragment {
 
 
     public void getHttp() {
-        //git请求
-        subscriberGet = new Subscriber<SongList>() {
-            @Override
-            public void onCompleted() {
+        if (!NetworkUtil.linkNetwork(getActivity())) {
+            ToastUtils.showLong(getActivity(),R.string.str_network_link);
+            Log.i(TAG, "getAPNType:" + NetworkUtil.getAPNType(getActivity()));
+        } else {
+            subscriberGet = new Subscriber<SongList>() {
+                @Override
+                public void onCompleted() {
 //                Toast.makeText(getActivity(), "请求成功", Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "onCompleted:");
-            }
+                    Log.i(TAG, "onCompleted:");
+                }
 
-            @Override
-            public void onError(Throwable onError) {
-                Log.i(TAG, "onError:" + onError.getMessage());
-            }
+                @Override
+                public void onError(Throwable onError) {
+                    Log.i(TAG, "onError:" + onError.getMessage());
+                }
 
-            @Override
-            public void onNext(SongList songList) {
-                Log.i(TAG, "onNext:"+songList.getContent().get(0).getName());
+                @Override
+                public void onNext(SongList songList) {
+                    Log.i(TAG, "onNext:" + songList.getContent().get(0).getName());
 
-                mlist = new ArrayList<SongList.ContentBeanX>();
+                    mlist = new ArrayList<SongList.ContentBeanX>();
 
-                for (int i = 0; i < songList.getContent().size(); i++) {
-                    if (CommonUtil.isBlank(songList.getContent().get(i).getWeb_url())){
-                        mlist.add(songList.getContent().get(i));
-                        Log.i(TAG, "onNext:"+songList.getContent().get(i).getName());
+                    for (int i = 0; i < songList.getContent().size(); i++) {
+                        if (CommonUtil.isBlank(songList.getContent().get(i).getWeb_url())) {
+                            mlist.add(songList.getContent().get(i));
+                            Log.i(TAG, "onNext:" + songList.getContent().get(i).getName());
+                        }
+                    }
+
+                    mAdapter = new MusicHallPagerAdapter(getChildFragmentManager(), mlist);
+
+                    for (int i = 0; i < mlist.size(); i++) {
+                        mTabLayout.addTab(mTabLayout.newTab().setText(mlist.get(i).getName()));
+                        Log.i(TAG, "onNext:mlist" + mlist.get(i).getName());
+                    }
+
+                    if (mAdapter != null) {
+                        mViewPager.setAdapter(mAdapter);
+                        mViewPager.setOffscreenPageLimit(1);
+                        mTabLayout.setupWithViewPager(mViewPager);
                     }
                 }
-
-                mAdapter = new MusicHallPagerAdapter(getChildFragmentManager(), mlist);
-
-                for (int i = 0; i < mlist.size(); i++) {
-                    mTabLayout.addTab(mTabLayout.newTab().setText(mlist.get(i).getName()));
-                    Log.i(TAG, "onNext:mlist"+mlist.get(i).getName());
-                }
-
-                if (mAdapter != null) {
-                    mViewPager.setAdapter(mAdapter);
-                    mViewPager.setOffscreenPageLimit(1);
-                    mTabLayout.setupWithViewPager(mViewPager);
-                }
-            }
-        };
-        new HttpUser().getSongListData(subscriberGet);
+            };
+            new HttpUser().getSongListData(subscriberGet);
+        }
     }
 
 

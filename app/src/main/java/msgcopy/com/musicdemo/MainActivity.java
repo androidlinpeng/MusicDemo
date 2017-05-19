@@ -20,7 +20,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,12 +34,10 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
-import java.io.File;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import me.wcy.lrcview.LrcView;
 import msgcopy.com.musicdemo.activity.BaseActivity;
 import msgcopy.com.musicdemo.fragment.MainFragment;
 import msgcopy.com.musicdemo.fragment.MusicHallFragment;
@@ -52,6 +49,7 @@ import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.FileUtils;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
 import msgcopy.com.musicdemo.utils.LogUtil;
+import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.utils.PreferencesUtility;
 import msgcopy.com.musicdemo.utils.ToastUtils;
 import msgcopy.com.musicdemo.utils.ViewUtils;
@@ -62,7 +60,7 @@ import rx.schedulers.Schedulers;
 
 import static msgcopy.com.musicdemo.R.id.toolbar;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener,OnPlayerListener{
     private static final String TAG = "MainActivity";
     private FragmentManager mFragmentManager;
     public static Fragment mCurrentFragment;
@@ -95,9 +93,32 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private PreferencesUtility mPreferences;
 
-    private LrcView lrcView;
-    private WindowManager windowM;
-    private WindowManager.LayoutParams layoutParams;
+    @Override
+    public void OnChangedSong(Song song) {
+        LogUtil.i(TAG,"OnChangedSong-------------");
+
+    }
+
+    @Override
+    public void onChengedProgress(PlayState playState) {
+        LogUtil.i(TAG,"onChengedProgress-------------");
+        if (mediaProgress != null) {
+            int position = playState.getCurrentTime();
+            int duration = playState.getMediaTime();
+            if (duration > 0) {
+                long pos = 1000L * position / duration;
+                //显示播放进度
+                mediaProgress.setProgress((int) pos);
+                isPlaying = playState.isPlaying();
+                LogUtil.i(TAG,"onChengedProgress-------------");
+                updatePausePlay(isPlaying);
+            }
+        }
+    }
+
+//    private LrcView lrcView;
+//    private WindowManager windowM;
+//    private WindowManager.LayoutParams layoutParams;
 
     private class MainBroadcastReceiver extends BroadcastReceiver {
 
@@ -176,7 +197,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
         initDefaultFragment();
         subscribeChangedSong();
-        subscribePlayState();
 
         mainReceiver = new MainBroadcastReceiver();
         IntentFilter filter = new IntentFilter();
@@ -191,11 +211,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
-        if (windowM!=null) {
-            windowM.removeView(lrcView);
+//        if (windowM!=null) {
+//            windowM.removeView(lrcView);
+//        }
+        MusicService musicService = MyApplication.getInstance().getMusicService();
+        if (!CommonUtil.isBlank(musicService)){
+            musicService.setOnPlayerListener(this);
         }
     }
 
@@ -203,56 +228,56 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
-                //getRawX/Y 是获取相对于Device的坐标位置 注意区别getX/Y[相对于View]
-                layoutParams.x = (int) event.getRawX();
-                layoutParams.y = (int) event.getRawY();
-                //更新"桌面歌词"的位置
-                windowM.updateViewLayout(lrcView, layoutParams);
-                //下面的removeView 可以去掉"桌面歌词"
-                //wm.removeView(myView);
+//                //getRawX/Y 是获取相对于Device的坐标位置 注意区别getX/Y[相对于View]
+//                layoutParams.x = (int) event.getRawX();
+//                layoutParams.y = (int) event.getRawY();
+//                //更新"桌面歌词"的位置
+//                windowM.updateViewLayout(lrcView, layoutParams);
+//                //下面的removeView 可以去掉"桌面歌词"
+//                //wm.removeView(myView);
                 break;
             case MotionEvent.ACTION_MOVE:
-                layoutParams.x = (int) event.getRawX();
-                layoutParams.y = (int) event.getRawY();
-                windowM.updateViewLayout(lrcView, layoutParams);
+//                layoutParams.x = (int) event.getRawX();
+//                layoutParams.y = (int) event.getRawY();
+//                windowM.updateViewLayout(lrcView, layoutParams);
                 break;
         }
         return false;
     }
 
-    private void desktopShowView() {
-        windowM = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-        layoutParams = new WindowManager.LayoutParams();
-//        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
-//        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        layoutParams.width = 1200;
-        layoutParams.height = 200;
-        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
-        lrcView = new LrcView(this);
-        lrcView.setMinimumHeight(100);
-        windowM.addView(lrcView, layoutParams);
-        lrcView.setOnClickListener(this);
+//    private void desktopShowView() {
+//        windowM = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+//        layoutParams = new WindowManager.LayoutParams();
+////        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+////        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+//        layoutParams.width = 1200;
+//        layoutParams.height = 200;
+//        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+//        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+//        layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+//        lrcView = new LrcView(this);
+//        lrcView.setMinimumHeight(100);
+//        windowM.addView(lrcView, layoutParams);
+//        lrcView.setOnClickListener(this);
+//
+//        if (!CommonUtil.isBlank(currentsong)) {
+//            loadLrc("");
+////            setLrcLabel("搜索歌词中...");
+//            if (FileUtils.fileIsExists(currentsong.artistName, currentsong.title)) {
+//                String filePath = FileUtils.getLrcDir() + FileUtils.getLrcFileName(currentsong.artistName, currentsong.title);
+//                LogUtil.i("filePath",""+filePath);
+//                loadLrc(filePath);
+//            }
+//        }
+//    }
 
-        if (!CommonUtil.isBlank(currentsong)) {
-            loadLrc("");
-//            setLrcLabel("搜索歌词中...");
-            if (FileUtils.fileIsExists(currentsong.artistName, currentsong.title)) {
-                String filePath = FileUtils.getLrcDir() + FileUtils.getLrcFileName(currentsong.artistName, currentsong.title);
-                LogUtil.i("filePath",""+filePath);
-                loadLrc(filePath);
-            }
-        }
-    }
-
-    private void loadLrc(String path) {
-        File file = new File(path);
-        lrcView.loadLrc(file);
-    }
-    private void setLrcLabel(String label) {
-        lrcView.setLabel(label);
-    }
+//    private void loadLrc(String path) {
+//        File file = new File(path);
+//        lrcView.loadLrc(file);
+//    }
+//    private void setLrcLabel(String label) {
+//        lrcView.setLabel(label);
+//    }
 
     private void binPlayService() {
         if (MyApplication.getInstance().getMusicService() == null) {
@@ -272,6 +297,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             try {
                 List<Song> mlist = (List<Song>) MsgCache.get().getAsObject(Constants.MUSIC_LIST);
                 musicService.updateMusicList(mlist);
+                musicService.setOnPlayerListener(MainActivity.this);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -316,25 +342,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         text_song_title = (TextView) findViewById(R.id.text_song_title);
         text_song_artist = (TextView) findViewById(R.id.text_song_artist);
         this.mediaProgress = (SeekBar) findViewById(R.id.seek_song_touch);
-        this.mediaProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    lrcView.updateTime(progress);
-                }
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
         this.mediaProgress.setMax(1000);
         //清除默认的左右边距
         this.mediaProgress.setPadding(0, 0, 0, 0);
@@ -349,6 +356,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                             .placeholder(R.drawable.icon_album_default)
                             .centerCrop()
                             .into(imag_albumArt);
+                    if (FileUtils.fileIsExistsAlbumPic(currentsong.artistName, currentsong.title)) {
+                        String filePath = FileUtils.getAlbumDir() + FileUtils.getAlbumFileName(currentsong.artistName, currentsong.title);
+                        Glide.with(MainActivity.this).load(filePath)
+                                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                                .placeholder(R.drawable.icon_album_default)
+                                .centerCrop()
+                                .into(imag_albumArt);
+                    }
                     text_song_title.setText("" + currentsong.title);
                     text_song_artist.setText("" + currentsong.artistName);
                 }
@@ -495,8 +510,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                                     .placeholder(R.drawable.icon_album_default)
                                     .centerCrop()
                                     .into(imag_albumArt);
+                            LogUtil.i("filePath1",currentsong.artistName+"----"+ListenerUtil.getAlbumArtUri(song.albumId).toString());
+                            if (FileUtils.fileIsExistsAlbumPic(song.artistName, song.title)) {
+                                String filePath = FileUtils.getAlbumDir() + FileUtils.getAlbumFileName(song.artistName, song.title);
+                                Glide.with(MainActivity.this).load(filePath)
+                                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                                        .placeholder(R.drawable.icon_album_default)
+                                        .centerCrop()
+                                        .into(imag_albumArt);
+                                LogUtil.i("filePath2",currentsong.artistName+"----"+filePath);
+                            }
                         } else {
-                            Glide.with(getApplication()).load(ListenerUtil.getAlbumArtUri(song.albumId).toString())
+                            Glide.with(getApplication()).load(song.picsmall)
                                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                                     .placeholder(R.drawable.icon_album_default)
                                     .centerCrop()
@@ -506,36 +531,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         text_song_artist.setText("" + song.artistName);
                         currentsong = (Song) MsgCache.get().getAsObject(Constants.MUSIC_INFO);
 
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                    }
-                });
-        RxBus.getInstance().addSubscription(this, subscription);
-    }
-
-    private void subscribePlayState() {
-        Subscription subscription = RxBus.getInstance()
-                .toObservable(PlayState.class)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<PlayState>() {
-                    @Override
-                    public void call(PlayState playState) {
-                        if (mediaProgress != null) {
-                            int position = playState.getCurrentTime();
-                            int duration = playState.getMediaTime();
-                            if (duration > 0) {
-                                long pos = 1000L * position / duration;
-                                //显示播放进度
-                                mediaProgress.setProgress((int) pos);
-                                isPlaying = playState.isPlaying();
-                                updatePausePlay(isPlaying);
-                                lrcView.updateTime(position);
-                                LogUtil.i("PlayState","------------------");
-                            }
-                        }
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -555,8 +550,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
         finish();
     }
-
-    ;
 
     @Override
     protected void onDestroy() {
@@ -598,7 +591,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     home.addCategory(Intent.CATEGORY_HOME);
                     startActivity(home);
-                    desktopShowView();
+//                    desktopShowView();
                     return true;
                 default:
                     break;

@@ -127,6 +127,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
                     }
                 });
 
+
                 break;
         }
     }
@@ -175,6 +176,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
         private ImageView albumArt;
         private ImageView popupMenu;
         private View playscore;
+        private View indicator;
 
         public ItemHolder(View view) {
             super(view);
@@ -184,6 +186,7 @@ public class MusicHallListAdapter extends RecyclerView.Adapter<RecyclerView.View
             this.albumArt = (ImageView) view.findViewById(R.id.image);
             this.popupMenu = (ImageView) view.findViewById(R.id.popup_menu);
             this.playscore = view.findViewById(R.id.playscore);
+            this.indicator = view.findViewById(R.id.now_playing_indicator);
             view.setOnClickListener(this);
         }
 

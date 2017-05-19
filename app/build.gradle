@@ -32,10 +32,7 @@ dependencies {
     //butterknife
     //Rxjava
     //gson
-
     //retrofit2
-    
-
     //retrofit2
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
@@ -66,4 +63,11 @@ dependencies {
     compile 'com.jcodecraeer:xrecyclerview:1.2.7'
     compile 'me.wcy:lrcview:1.4.1'
     compile 'com.viewpagerindicator:library:2.4.1@aar'
+    //fresco
+    compile 'com.facebook.fresco:fresco:1.3.0'
+    compile 'com.facebook.fresco:animated-base-support:1.3.0'
+    compile 'com.facebook.fresco:animated-gif:1.3.0'
+    compile 'com.facebook.fresco:webpsupport:1.3.0'
+    compile 'com.facebook.fresco:animated-webp:1.3.0'
+    compile 'com.facebook.fresco:imagepipeline-okhttp3:1.3.0'
 }

@@ -13,7 +13,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import msgcopy.com.musicdemo.Constants;
-import msgcopy.com.musicdemo.MsgCache;
+import msgcopy.com.musicdemo.OnPlayerListener;
+import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.MyApplication;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.RxBus;
@@ -28,7 +29,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class LockScreenActivity extends SwipeBackActivity {
+public class LockScreenActivity extends SwipeBackActivity implements OnPlayerListener{
 
     private static final String TAG = "LockScreenActivity";
 
@@ -78,7 +79,8 @@ public class LockScreenActivity extends SwipeBackActivity {
             initView(currentsong);
         }
         subscribeChangedSong();
-        subscribePlayState();
+//        subscribePlayState();
+        MyApplication.getInstance().getMusicService().setOnPlayerListener(this);
 
     }
 
@@ -177,25 +179,25 @@ public class LockScreenActivity extends SwipeBackActivity {
         RxBus.getInstance().addSubscription(this, subscription);
     }
 
-    private void subscribePlayState() {
-        Subscription subscription = RxBus.getInstance()
-                .toObservable(PlayState.class)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-//                .distinctUntilChanged()
-                .subscribe(new Action1<PlayState>() {
-                    @Override
-                    public void call(PlayState playState) {
-                        isPlaying = playState.isPlaying();
-                        updatePausePlay(isPlaying);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                    }
-                });
-        RxBus.getInstance().addSubscription(this, subscription);
-    }
+//    private void subscribePlayState() {
+//        Subscription subscription = RxBus.getInstance()
+//                .toObservable(PlayState.class)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+////                .distinctUntilChanged()
+//                .subscribe(new Action1<PlayState>() {
+//                    @Override
+//                    public void call(PlayState playState) {
+//                        isPlaying = playState.isPlaying();
+//                        updatePausePlay(isPlaying);
+//                    }
+//                }, new Action1<Throwable>() {
+//                    @Override
+//                    public void call(Throwable throwable) {
+//                    }
+//                });
+//        RxBus.getInstance().addSubscription(this, subscription);
+//    }
 
     private void updatePausePlay(boolean isPlaying) {
         if (isPlaying) {
@@ -217,5 +219,16 @@ public class LockScreenActivity extends SwipeBackActivity {
     @Override
     public void onBackPressed() {
 
+    }
+
+    @Override
+    public void OnChangedSong(Song song) {
+
+    }
+
+    @Override
+    public void onChengedProgress(PlayState playState) {
+        isPlaying = playState.isPlaying();
+        updatePausePlay(isPlaying);
     }
 }

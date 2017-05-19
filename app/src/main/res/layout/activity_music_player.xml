@@ -20,7 +20,6 @@
         android:layout_height="match_parent"
         app:overlayColor="#20000000" />
 
-
     <RelativeLayout
         android:id="@+id/rl_musicname"
         android:layout_width="match_parent"
@@ -28,7 +27,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="2dp"
-        android:layout_marginTop="25dp">
+        android:layout_marginTop="28dp">
 
         <ImageButton
             android:id="@+id/panel_back"

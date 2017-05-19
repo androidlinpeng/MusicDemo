@@ -1,10 +1,13 @@
 package msgcopy.com.musicdemo.utils;
 
+import android.graphics.Bitmap;
 import android.os.Environment;
 import android.text.TextUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -21,6 +24,7 @@ public class FileUtils {
 
     private static final String MP3 = ".mp3";
     private static final String LRC = ".lrc";
+    private static final String JPG = ".jpg";
 
     private static String getAppDir() {
         return Environment.getExternalStorageDirectory() + "/MusicDemo";
@@ -55,7 +59,7 @@ public class FileUtils {
     }
 
     public static String getAlbumFileName(String artist, String title) {
-        return getFileName(artist, title);
+        return getFileName(artist, title)+JPG;
     }
 
     public static String getMp3FileName(String artist, String title) {
@@ -102,9 +106,35 @@ public class FileUtils {
         }
     }
 
+    public static void saveBitmapFile(String fileName,Bitmap bitmap){
+        try {
+            File file = new File(fileName);
+            File parentFlie = file.getParentFile();
+            if (!parentFlie.exists()){
+                parentFlie.mkdirs();
+            }
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,new FileOutputStream(file));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static boolean fileIsExists(String artist, String title) {
         try {
             String filePath = getAppDir() + "/Lyric/" + getLrcFileName(artist, title);
+            File file = new File(filePath);
+            if (!file.exists()) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean fileIsExistsAlbumPic(String artist, String title) {
+        try {
+            String filePath = getAppDir() + "/Album/" + getAlbumFileName(artist, title);
             File file = new File(filePath);
             if (!file.exists()) {
                 return false;

@@ -1,20 +1,22 @@
-package msgcopy.com.musicdemo;
+package msgcopy.com.musicdemo.utils;
 
 import android.content.Context;
 
 import java.io.File;
 
-public class MsgCache{
+import msgcopy.com.musicdemo.MyApplication;
 
-    public static ACache get(){
+public class MsgCache {
+
+    public static ACache get() {
         return get(MyApplication.getInstance());
     }
 
-    public static ACache get(Context cxt){
-       return get(cxt,false);
+    public static ACache get(Context cxt) {
+        return get(cxt, false);
     }
 
-	public static ACache get(Context cxt, boolean withUser){
+    public static ACache get(Context cxt, boolean withUser) {
 //		String username= withUser ? Account.getUser().username : "common";
         String path = cxt.getFilesDir()
                 + File.separator
@@ -23,5 +25,5 @@ public class MsgCache{
                 + "ACache";
         File file = new File(path);
         return ACache.get(file);
-	}
+    }
 }

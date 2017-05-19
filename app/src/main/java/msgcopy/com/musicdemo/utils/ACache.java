@@ -1,4 +1,4 @@
-package msgcopy.com.musicdemo;
+package msgcopy.com.musicdemo.utils;
 
 /**
  * Copyright (c) 2012-2013, Michael Yang 杨福海 (www.yangfuhai.com).

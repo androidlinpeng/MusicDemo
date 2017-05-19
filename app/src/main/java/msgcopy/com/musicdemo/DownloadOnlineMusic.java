@@ -1,6 +1,7 @@
 package msgcopy.com.musicdemo;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -24,6 +25,7 @@ public abstract class DownloadOnlineMusic extends DownloadMusic {
 
     private Subscriber<Songurl> subscriberGet;
     private Subscriber<SongLry> subscriberSongLry;
+    private Subscriber<Bitmap> subscriberPic;
 
     public DownloadOnlineMusic(Activity activity, NewSong.SongListBean songListBean) {
         super(activity);
@@ -86,9 +88,29 @@ public abstract class DownloadOnlineMusic extends DownloadMusic {
             picUrl = songListBean.getPic_small();
         }
         if (!albumFile.exists() && !TextUtils.isEmpty(picUrl)) {
-
+            downloadAlbum(picUrl, albumFile);
         }
 
+    }
+
+    private void downloadAlbum(String picUrl, final File albumFile) {
+        subscriberPic = new Subscriber<Bitmap>() {
+            @Override
+            public void onCompleted() {
+                Log.i(TAG, "onCompleted: download");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.i(TAG, "onError:download" + e.getMessage());
+            }
+
+            @Override
+            public void onNext(Bitmap bitmap) {
+                Log.i(TAG, "onNext:download" + bitmap);
+            }
+        };
+        new HttpUser().getDownloadPicFromNet(subscriberPic, picUrl, albumFile);
     }
 }
 

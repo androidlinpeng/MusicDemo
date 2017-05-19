@@ -24,10 +24,13 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import msgcopy.com.musicdemo.DownloadOnlineMusic;
 import msgcopy.com.musicdemo.HttpUser;
+import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.R;
 import msgcopy.com.musicdemo.adapter.MusicHallListAdapter;
 import msgcopy.com.musicdemo.modul.NewSong;
+import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.FileUtils;
+import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.utils.ToastUtils;
 import rx.Subscriber;
 
@@ -35,9 +38,11 @@ import rx.Subscriber;
  * Created by liang on 2017/4/21.
  */
 
-public class MusicHallListFragment extends BaseFragment implements MusicHallListAdapter.OnMoreClickListener{
+public class MusicHallListFragment extends BaseFragment implements MusicHallListAdapter.OnMoreClickListener {
 
     private static final String TAG = "MusicHallListFragment";
+    private static final int LEAFS_CACHE_TIME = 60 * 60 * 24; // 秒
+    public static final String ONLINE_MUSIC_LIST = "online_music_list";
 
     @BindView(R.id.recyclerview)
     XRecyclerView recyclerView;
@@ -46,8 +51,8 @@ public class MusicHallListFragment extends BaseFragment implements MusicHallList
     private Subscriber<NewSong> subscriberGet;
     List<NewSong.SongListBean> song_list;
     private String type = "";
-
     private int loadingNumber = 15;
+    private boolean refresh = false;
 
     @Override
     protected int setLayoutResourceID() {
@@ -78,10 +83,11 @@ public class MusicHallListFragment extends BaseFragment implements MusicHallList
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        getHttp(type,""+loadingNumber);
+                        refresh = true;
+                        getHttp(type, "" + loadingNumber);
                         recyclerView.refreshComplete();
                     }
-                },1000);
+                }, 1000);
             }
 
             @Override
@@ -89,42 +95,56 @@ public class MusicHallListFragment extends BaseFragment implements MusicHallList
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        refresh = true;
                         loadingNumber += 10;
-                        getHttp(type,""+loadingNumber);
+                        getHttp(type, "" + loadingNumber);
                         recyclerView.loadMoreComplete();
                     }
-                },1000);
+                }, 1000);
             }
         });
 
         mAdapter.setOnMoreClickListener(this);
 
-        getHttp(type,""+loadingNumber);
+        getHttp(type, "" + loadingNumber);
 
     }
 
-    public void getHttp(String type,String size) {
-        //git请求
-        subscriberGet = new Subscriber<NewSong>() {
-            @Override
-            public void onCompleted() {
-                Log.i(TAG, "onCompleted:");
-            }
+    public void getHttp(final String type, String size) {
 
-            @Override
-            public void onError(Throwable onError) {
-                Log.i(TAG, "onError:" + onError.getMessage());
-            }
+        try {
+            song_list = new ArrayList<NewSong.SongListBean>();
+            song_list = (List<NewSong.SongListBean>) MsgCache.get().getAsObject(ONLINE_MUSIC_LIST+type);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        if (!CommonUtil.isBlank(song_list)&&!refresh){
+            mAdapter.setSongList(song_list);
+            LogUtil.i(TAG,"song_list.size(): "+song_list.size());
+        }else {
+            subscriberGet = new Subscriber<NewSong>() {
+                @Override
+                public void onCompleted() {
+                    Log.i(TAG, "onCompleted:");
+                }
 
-            @Override
-            public void onNext(NewSong newSong) {
-                Log.i(TAG, "onNext:"+newSong.getBillboard().getName());
-                song_list = new ArrayList<NewSong.SongListBean>();
-                song_list = newSong.getSong_list();
-                mAdapter.setSongList(song_list);
-            }
-        };
-        new HttpUser().getGetData(subscriberGet,type,size);
+                @Override
+                public void onError(Throwable onError) {
+                    Log.i(TAG, "onError:" + onError.getMessage());
+                }
+
+                @Override
+                public void onNext(NewSong newSong) {
+                    Log.i(TAG, "onNext:" + newSong.getBillboard().getName());
+                    song_list = new ArrayList<NewSong.SongListBean>();
+                    song_list = newSong.getSong_list();
+                    mAdapter.setSongList(song_list);
+                    MsgCache.get().put(ONLINE_MUSIC_LIST+type, song_list);
+                }
+            };
+            new HttpUser().getGetData(subscriberGet, type, size);
+        }
+
     }
 
     @Override
@@ -151,7 +171,7 @@ public class MusicHallListFragment extends BaseFragment implements MusicHallList
         dialog.show();
     }
 
-    private void artistInfo(NewSong.SongListBean song) {
+    private void artistInfo(NewSong.SongListBean songListBean){
 
     }
 
@@ -164,12 +184,12 @@ public class MusicHallListFragment extends BaseFragment implements MusicHallList
 
             @Override
             public void onExecuteSuccess(Void aVoid) {
-                ToastUtils.showLong(getActivity(),"正在下载"+song.getTitle());
+                ToastUtils.showLong(getActivity(), "正在下载" + song.getTitle());
             }
 
             @Override
             public void onExecuteFail(Exception e) {
-                ToastUtils.showLong(getActivity(),"无法下载");
+                ToastUtils.showLong(getActivity(), "无法下载");
             }
         }.execute();
 
@@ -183,6 +203,7 @@ public class MusicHallListFragment extends BaseFragment implements MusicHallList
         public ItemListDivider(Context cxt) {
             this.drawable = cxt.getResources().getDrawable(R.drawable.divider_article_list);
         }
+
         @Override
         public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
             int left = parent.getPaddingLeft();

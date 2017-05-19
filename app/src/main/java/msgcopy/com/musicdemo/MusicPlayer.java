@@ -13,6 +13,7 @@ import msgcopy.com.musicdemo.modul.NewSong;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.modul.Songurl;
 import msgcopy.com.musicdemo.service.MusicService;
+import msgcopy.com.musicdemo.utils.MsgCache;
 
 import static msgcopy.com.musicdemo.Constants.MUSIC_LIST;
 
@@ -40,7 +41,7 @@ public class MusicPlayer {
 
     public static void onLinePlayAll(Context mContext, Songurl songurl,List<NewSong.SongListBean> arraylist,int position){
 
-        Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1,songurl.getBitrate().getFile_link());
+        Song song = new Song(Constants.ONLINE_MUSIC,Long.parseLong(songurl.getSonginfo().getSong_id()), -1, -1, songurl.getSonginfo().getTitle(), songurl.getSonginfo().getAuthor(), songurl.getSonginfo().getAlbum_title(), -1, -1,songurl.getBitrate().getFile_link(),songurl.getSonginfo().getPic_small());
         MsgCache.get().put(Constants.MUSIC_INFO,song);
 
         List<Song> songs = new ArrayList<Song>();

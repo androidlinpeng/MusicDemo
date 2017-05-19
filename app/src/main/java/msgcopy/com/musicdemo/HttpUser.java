@@ -2,6 +2,8 @@ package msgcopy.com.musicdemo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Environment;
 
@@ -9,7 +11,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import msgcopy.com.musicdemo.modul.NewSong;
@@ -23,12 +27,14 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -46,6 +52,57 @@ public class HttpUser {
 
     private Retrofit retrofit;
     private UserService userService;
+
+    public void getDownloadPicFromNet(Subscriber<Bitmap> subscriber, String fileUrl, final  File albumFile) {
+        userService = getRetrofit().create(UserService.class);
+        userService.downloadPicFromNet(fileUrl)
+                .subscribeOn(Schedulers.io())
+                .map(new Func1<ResponseBody, Bitmap>() {
+                    @Override
+                    public Bitmap call(ResponseBody responseBody) {
+                        boolean FileDownloaded = DownloadImage(responseBody,albumFile);
+                        Bitmap bMap = null;
+                        if (FileDownloaded) {
+                            bMap = BitmapFactory.decodeFile(String.valueOf(albumFile));
+//                            int width, height;
+//                            width = 2 * bMap.getWidth();
+//                            height = 6 * bMap.getHeight();
+//                            Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
+                        }
+                        return bMap;//返回一个bitmap对象
+                    }
+                })
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
+
+    private boolean DownloadImage(ResponseBody body,File albumFile) {
+        try {
+            InputStream in = null;
+            FileOutputStream out = null;
+            try {
+                in = body.byteStream();
+                out = new FileOutputStream(albumFile);
+                int c;
+                while ((c = in.read()) != -1) {
+                    out.write(c);
+                }
+            } catch (IOException e) {
+                return false;
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+                if (out != null) {
+                    out.close();
+                }
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
 
     public void getSongLry(Subscriber<SongLry> subscriber, String songid) {
         userService = getRetrofit().create(UserService.class);
@@ -74,15 +131,16 @@ public class HttpUser {
                 .subscribe(subscriber);
     }
 
-    public void getGetData(Subscriber<NewSong> subscriber,String type,String size) {
+    public void getGetData(Subscriber<NewSong> subscriber, String type, String size) {
         userService = getRetrofit().create(UserService.class);
-        userService.getGetData(type,size)
+        userService.getGetData(type, size)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(subscriber);
 
     }
+
     public void getSongListData(Subscriber<SongList> subscriber) {
         userService = getRetrofit().create(UserService.class);
         userService.getSongListData()
@@ -127,14 +185,16 @@ public class HttpUser {
             super();
             this.context = context;
         }
+
         @Override
         public Response intercept(Chain chain) throws IOException {
             final Request.Builder builder = chain.request().newBuilder();
-            builder.addHeader(USER_AGENT,makeUserAgent());
+            builder.addHeader(USER_AGENT, makeUserAgent());
             return chain.proceed(builder.build());
 
         }
     }
+
     private String makeUserAgent() {
         return Build.BRAND + "/" + Build.MODEL + "/" + Build.VERSION.RELEASE;
     }
@@ -147,12 +207,13 @@ public class HttpUser {
             super();
             this.context = context;
         }
+
         @Override
         public Response intercept(Chain chain) throws IOException {
             Response originalResponse = chain.proceed(chain.request());
             //这里获取请求返回的cookie
             if (!originalResponse.headers("Set-Cookie").isEmpty()) {
-                setCookie(context,String.valueOf(originalResponse.headers("Set-Cookie")));
+                setCookie(context, String.valueOf(originalResponse.headers("Set-Cookie")));
             }
             return originalResponse;
         }
@@ -160,11 +221,12 @@ public class HttpUser {
 
     private static final String COOKIE = "cookie";
 
-    public String getCookie(Context context){
+    public String getCookie(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(COOKIE, Context.MODE_PRIVATE);
         return sharedPreferences.getString(COOKIE, "");
     }
-    public String setCookie(Context context,String cookie){
+
+    public String setCookie(Context context, String cookie) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(COOKIE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(COOKIE, cookie);

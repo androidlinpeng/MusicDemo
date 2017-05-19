@@ -20,6 +20,9 @@
     <string name="str_press_again_to_exit">再次点击返回键切换到桌面</string>
     <string name="search_library">本地搜索</string>
     <string name="str_search_lyrics">搜索歌词中...</string>
+    <string name="str_network_link">请链接网络</string>
+    <string name="str_network_unconnect">网络已断开</string>
+    <string name="str_network_connect">网络已连接至%s</string>
 
     <string name="play_shuffle">随机播放</string>
     <string name="content_empty_default">空空如也</string>
