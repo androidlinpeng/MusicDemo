@@ -45,13 +45,13 @@ import msgcopy.com.musicdemo.fragment.SearchFragment;
 import msgcopy.com.musicdemo.modul.PlayState;
 import msgcopy.com.musicdemo.modul.Song;
 import msgcopy.com.musicdemo.service.MusicService;
+import msgcopy.com.musicdemo.utils.AnimationUtils;
 import msgcopy.com.musicdemo.utils.CommonUtil;
 import msgcopy.com.musicdemo.utils.FileUtils;
 import msgcopy.com.musicdemo.utils.ListenerUtil;
 import msgcopy.com.musicdemo.utils.LogUtil;
 import msgcopy.com.musicdemo.utils.MsgCache;
 import msgcopy.com.musicdemo.utils.PreferencesUtility;
-import msgcopy.com.musicdemo.utils.ToastUtils;
 import msgcopy.com.musicdemo.utils.ViewUtils;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -78,6 +78,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private TextView songtitle;
     private TextView text_song_title;
     private TextView text_song_artist;
+    private TextView mTv_hint;
 
     private SeekBar mediaProgress = null;
 
@@ -101,7 +102,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     @Override
     public void onChengedProgress(PlayState playState) {
-        LogUtil.i(TAG,"onChengedProgress-------------");
         if (mediaProgress != null) {
             int position = playState.getCurrentTime();
             int duration = playState.getMediaTime();
@@ -110,7 +110,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 //显示播放进度
                 mediaProgress.setProgress((int) pos);
                 isPlaying = playState.isPlaying();
-                LogUtil.i(TAG,"onChengedProgress-------------");
                 updatePausePlay(isPlaying);
             }
         }
@@ -178,8 +177,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         setSupportActionBar(mToolbar);
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
-
-//        mToolbar.setTitle(R.string.str_home);
 
         initView();
 
@@ -335,6 +332,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void initView() {
+        mTv_hint = (TextView) findViewById(R.id.mTv_hint);
         appBar = (AppBarLayout) findViewById(R.id.appBar);
         playerbottom = (RelativeLayout) findViewById(R.id.player_bottom);
         imag_albumArt = (ImageView) findViewById(R.id.imag_albumArt);
@@ -510,7 +508,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                                     .placeholder(R.drawable.icon_album_default)
                                     .centerCrop()
                                     .into(imag_albumArt);
-                            LogUtil.i("filePath1",currentsong.artistName+"----"+ListenerUtil.getAlbumArtUri(song.albumId).toString());
                             if (FileUtils.fileIsExistsAlbumPic(song.artistName, song.title)) {
                                 String filePath = FileUtils.getAlbumDir() + FileUtils.getAlbumFileName(song.artistName, song.title);
                                 Glide.with(MainActivity.this).load(filePath)
@@ -518,7 +515,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                                         .placeholder(R.drawable.icon_album_default)
                                         .centerCrop()
                                         .into(imag_albumArt);
-                                LogUtil.i("filePath2",currentsong.artistName+"----"+filePath);
                             }
                         } else {
                             Glide.with(getApplication()).load(song.picsmall)
@@ -575,7 +571,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             }
             switch (keyBackClickCount++) {
                 case 0:
-                    ToastUtils.showLong(this, R.string.str_press_again_to_exit);
                     mToolbar.setVisibility(View.VISIBLE);
                     getSupportFragmentManager().popBackStack();
                     Timer timer = new Timer();
@@ -585,6 +580,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                             keyBackClickCount = 0;
                         }
                     }, 1000);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            AnimationUtils.showAnimationHint(mTv_hint);
+                        }
+                    });
                     break;
                 case 1:
                     Intent home = new Intent(Intent.ACTION_MAIN);
@@ -600,5 +601,4 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
         return super.onKeyDown(keyCode, event);
     }
-
 }
